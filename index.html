@@ -1,0 +1,424 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Farbkiste</title>
+<!-- Supabase-Bibliothek: übernimmt Login und Datenbank-Anfragen -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root {
+    --bg: #14151a; --card: #1e2028; --line: #2d303b; --text: #eceef3; --muted: #9aa0ae;
+    --accent: #7cc4a4; --ok: #6fcf8f; --mid: #e3cf5b; --warn: #e8a54b; --bad: #e26d6d;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+         background: var(--bg); color: var(--text); }
+  header { position: sticky; top: 0; z-index: 5; background: var(--bg); border-bottom: 1px solid var(--line);
+           padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; }
+  h1 { font-size: 1.25rem; margin: 0; }
+  h1 span { color: var(--accent); }
+  main { max-width: 720px; margin: 0 auto; padding: 16px; }
+  button, input, select, textarea { font: inherit; color: inherit; }
+  button { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 8px 12px; cursor: pointer; }
+  button.primary { background: var(--accent); border-color: var(--accent); color: #10231a; font-weight: 600; }
+  button.danger { color: var(--bad); }
+  input, select, textarea { width: 100%; background: var(--card); border: 1px solid var(--line);
+                            border-radius: 8px; padding: 9px 10px; }
+  label { display: block; font-size: .85rem; color: var(--muted); margin: 10px 0 4px; }
+  .hidden { display: none !important; }
+
+  /* Login */
+  #login { max-width: 360px; margin: 40px auto; background: var(--card); border: 1px solid var(--line);
+           border-radius: 12px; padding: 20px; }
+  #login button { width: 100%; margin-top: 16px; }
+  .fehler { color: var(--bad); font-size: .9rem; margin-top: 10px; }
+
+  /* Banner, wenn die Datenbank schläft */
+  #schlaf { background: #3a2a14; border: 1px solid var(--warn); border-radius: 10px; padding: 12px 14px; margin-bottom: 14px; }
+  #schlaf a { color: var(--warn); }
+  #schlaf button { margin-top: 8px; }
+
+  /* Tabs und Filter */
+  .tabs { display: flex; gap: 8px; margin-bottom: 12px; }
+  .tabs button { flex: 1; }
+  .tabs button.aktiv { border-color: var(--accent); color: var(--accent); font-weight: 600; }
+  .badge { background: var(--warn); color: #2a1a05; border-radius: 99px; padding: 0 7px; font-size: .8rem; margin-left: 4px; }
+  .filter { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+  .filter input { grid-column: 1 / -1; }
+  #status { color: var(--muted); font-size: .9rem; margin: 8px 0; }
+
+  /* Farbkarten */
+  .karte { background: var(--card); border: 1px solid var(--line); border-left: 5px solid var(--ok);
+           border-radius: 10px; padding: 12px; margin-bottom: 10px; }
+  .karte.halb { border-left-color: var(--mid); }
+  .karte.knapp { border-left-color: var(--warn); }
+  .karte.weg { border-left-color: var(--bad); }
+  .name { font-weight: 600; }
+  .meta, .notiz { color: var(--muted); font-size: .85rem; margin-top: 2px; }
+  .zeile { display: flex; gap: 8px; align-items: center; margin-top: 10px; flex-wrap: wrap; }
+  .zeile select { flex: 1; min-width: 140px; }
+  .stepper { display: flex; align-items: center; gap: 6px; }
+  .stepper button { width: 36px; padding: 6px 0; }
+  .stepper span { min-width: 22px; text-align: center; }
+  .check { display: flex; align-items: center; gap: 6px; margin: 0; color: var(--text); font-size: .95rem; }
+  .check input { width: auto; }
+  .rechts { margin-left: auto; display: flex; gap: 6px; }
+  .leer { color: var(--muted); text-align: center; padding: 30px 0; }
+
+  /* Plus-Knopf und Formular */
+  #neu { position: fixed; right: 16px; bottom: 16px; border-radius: 99px; padding: 12px 18px;
+         box-shadow: 0 4px 16px rgba(0,0,0,.4); }
+  dialog { background: var(--card); color: var(--text); border: 1px solid var(--line); border-radius: 12px;
+           width: min(460px, calc(100% - 32px)); padding: 18px; }
+  dialog::backdrop { background: rgba(0,0,0,.6); }
+  dialog h2 { margin: 0 0 4px; font-size: 1.1rem; }
+  .zwei { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .knoepfe { display: flex; gap: 8px; margin-top: 16px; }
+  .knoepfe .primary { margin-left: auto; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🎨 <span>Farb</span>kiste</h1>
+  <button id="logout" class="hidden">Abmelden</button>
+</header>
+
+<main>
+  <!-- ANMELDUNG -->
+  <form id="login" class="hidden">
+    <h2 style="margin-top:0">Anmelden</h2>
+    <label for="email">E-Mail</label>
+    <input id="email" type="email" autocomplete="username" required>
+    <label for="passwort">Passwort</label>
+    <input id="passwort" type="password" autocomplete="current-password" required>
+    <button class="primary" type="submit">Anmelden</button>
+    <div id="loginFehler" class="fehler"></div>
+  </form>
+
+  <!-- APP -->
+  <section id="app" class="hidden">
+    <div id="schlaf" class="hidden">
+      <strong>😴 Die Datenbank antwortet nicht.</strong><br>
+      Vermutlich wurde das Projekt wegen Inaktivität pausiert.
+      <a id="dashboardLink" target="_blank" rel="noopener">Im Supabase-Dashboard aufwecken</a>
+      und nach ein paar Minuten nochmals versuchen.<br>
+      <button id="nochmal">Nochmal versuchen</button>
+    </div>
+
+    <div class="tabs">
+      <button id="tabAlle" class="aktiv">Alle Farben</button>
+      <button id="tabEinkauf">Einkaufsliste<span id="anzahlEinkauf" class="badge">0</span></button>
+    </div>
+
+    <div class="filter">
+      <input id="suche" type="search" placeholder="Suchen, z. B. Abaddon">
+      <select id="filterFamilie"><option value="">Alle Farbfamilien</option></select>
+      <select id="filterTyp"><option value="">Alle Typen</option></select>
+    </div>
+
+    <div id="status"></div>
+    <div id="liste"></div>
+    <button id="neu" class="primary">+ Farbe</button>
+  </section>
+</main>
+
+<!-- FORMULAR: Farbe erfassen oder bearbeiten -->
+<dialog id="dlg">
+  <form id="formular" method="dialog">
+    <h2 id="dlgTitel">Neue Farbe</h2>
+    <label for="fName">Name</label>
+    <input id="fName" required placeholder="z. B. Abaddon Black">
+    <div class="zwei">
+      <div>
+        <label for="fMarke">Marke</label>
+        <input id="fMarke" list="marken" value="Citadel" required>
+      </div>
+      <div>
+        <label for="fTyp">Typ</label>
+        <select id="fTyp"></select>
+      </div>
+    </div>
+    <div class="zwei">
+      <div>
+        <label for="fFamilie">Farbfamilie</label>
+        <input id="fFamilie" list="familien" placeholder="z. B. Schwarz">
+      </div>
+      <div>
+        <label for="fAnzahl">Anzahl Töpfe</label>
+        <input id="fAnzahl" type="number" min="0" value="1">
+      </div>
+    </div>
+    <label for="fFuell">Füllstand</label>
+    <select id="fFuell"></select>
+    <label class="check" style="margin-top:12px"><input id="fEinkaufen" type="checkbox"> Auf die Einkaufsliste</label>
+    <label for="fNotizen">Notizen</label>
+    <textarea id="fNotizen" rows="2"></textarea>
+    <div id="formFehler" class="fehler"></div>
+    <div class="knoepfe">
+      <button type="button" id="loeschen" class="danger hidden">Löschen</button>
+      <button type="button" id="abbrechen">Abbrechen</button>
+      <button type="submit" class="primary">Speichern</button>
+    </div>
+  </form>
+</dialog>
+
+<datalist id="marken">
+  <option value="Citadel"><option value="Vallejo"><option value="The Army Painter"><option value="AK Interactive"><option value="Scale75">
+</datalist>
+<datalist id="familien"></datalist>
+
+<script>
+/* ============ 1. VERBINDUNG ZU SUPABASE ============
+   Die URL und der "publishable" (bzw. "anon") Schlüssel dürfen öffentlich
+   in der Seite stehen. Geschützt sind die Daten durch RLS: Ohne Login
+   sieht niemand etwas. */
+const SUPABASE_URL = 'https://vuskyttdyznbbmphywqu.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_FwTRL0rGAuqm9xC_60dnig_xMqKZZDx';
+
+const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+/* ============ 2. GRUNDEINSTELLUNGEN ============ */
+// Gleiche Werte wie die "check"-Regeln in der Datenbank
+const FUELLSTAENDE = ['voll', 'halb', 'fast leer', 'eingetrocknet', 'leer'];
+const TYPEN = ['Base', 'Layer', 'Shade', 'Contrast', 'Technical', 'Dry', 'Air', 'Spray', 'Andere'];
+const KNAPP = ['fast leer', 'eingetrocknet', 'leer'];
+
+let farben = [];          // alle Farben aus der Datenbank
+let ansicht = 'alle';     // 'alle' oder 'einkauf'
+let bearbeiteId = null;   // null = neue Farbe, sonst die id der Farbe
+
+const el = id => document.getElementById(id);
+const brauchtKauf = f => KNAPP.includes(f.fuellstand) || f.einkaufen;
+
+el('dashboardLink').href =
+  'https://supabase.com/dashboard/project/' + new URL(SUPABASE_URL).hostname.split('.')[0];
+
+// Dropdowns befüllen
+function optionen(select, werte) {
+  for (const w of werte) select.append(new Option(w, w));
+}
+optionen(el('fTyp'), TYPEN);
+optionen(el('fFuell'), FUELLSTAENDE);
+optionen(el('filterTyp'), TYPEN);
+
+/* ============ 3. ANMELDEN / ABMELDEN ============ */
+db.auth.onAuthStateChange((event, session) => {
+  const drin = !!session;
+  el('login').classList.toggle('hidden', drin);
+  el('app').classList.toggle('hidden', !drin);
+  el('logout').classList.toggle('hidden', !drin);
+  // Laden kurz verzögern: Supabase-Aufrufe direkt hier drin können hängen bleiben
+  if (drin && (event === 'INITIAL_SESSION' || event === 'SIGNED_IN')) setTimeout(laden, 0);
+});
+
+el('login').addEventListener('submit', async e => {
+  e.preventDefault();
+  el('loginFehler').textContent = '';
+  if (SUPABASE_KEY.startsWith('HIER_')) {
+    el('loginFehler').textContent = 'Im Code fehlt noch der Supabase-Schlüssel (SUPABASE_KEY).';
+    return;
+  }
+  try {
+    const { error } = await db.auth.signInWithPassword({
+      email: el('email').value.trim(),
+      password: el('passwort').value
+    });
+    if (error) el('loginFehler').textContent = 'Anmeldung fehlgeschlagen: E-Mail oder Passwort stimmt nicht.';
+  } catch {
+    el('loginFehler').textContent = 'Keine Verbindung zur Datenbank. Schläft das Projekt vielleicht?';
+  }
+});
+
+el('logout').addEventListener('click', () => db.auth.signOut());
+
+/* ============ 4. DATEN LADEN ============ */
+async function laden() {
+  el('status').textContent = 'Lade Farben …';
+  // Wenn nach 10 Sekunden keine Antwort kommt, gilt die Datenbank als "schlafend"
+  const timeout = new Promise((_, nein) => setTimeout(() => nein(new Error('Zeitüberschreitung')), 10000));
+  try {
+    const { data, error } = await Promise.race([
+      db.from('farben').select('*').order('name'),
+      timeout
+    ]);
+    if (error) throw error;
+    farben = data;
+    el('schlaf').classList.add('hidden');
+    el('status').textContent = '';
+    render();
+  } catch (fehler) {
+    console.error(fehler);
+    el('status').textContent = '';
+    el('schlaf').classList.remove('hidden');
+  }
+}
+el('nochmal').addEventListener('click', laden);
+
+/* ============ 5. ANZEIGEN ============ */
+function render() {
+  // Farbfamilien-Filter und Vorschläge aus den vorhandenen Daten aufbauen
+  const familien = [...new Set(farben.map(f => f.farbfamilie).filter(Boolean))].sort();
+  const gewaehlt = el('filterFamilie').value;
+  el('filterFamilie').replaceChildren(new Option('Alle Farbfamilien', ''));
+  optionen(el('filterFamilie'), familien);
+  el('filterFamilie').value = familien.includes(gewaehlt) ? gewaehlt : '';
+  el('familien').replaceChildren(...familien.map(f => new Option(f)));
+
+  el('anzahlEinkauf').textContent = farben.filter(brauchtKauf).length;
+
+  const suche = el('suche').value.trim().toLowerCase();
+  const familie = el('filterFamilie').value;
+  const typ = el('filterTyp').value;
+
+  let liste = farben.filter(f =>
+    (!suche || (f.name + ' ' + f.marke).toLowerCase().includes(suche)) &&
+    (!familie || f.farbfamilie === familie) &&
+    (!typ || f.typ === typ)
+  );
+  if (ansicht === 'einkauf') liste = liste.filter(brauchtKauf);
+
+  const wrap = el('liste');
+  wrap.replaceChildren();
+  if (!liste.length) {
+    const p = document.createElement('p');
+    p.className = 'leer';
+    p.textContent = ansicht === 'einkauf' ? 'Nichts zu kaufen. 🎉' : 'Keine Farben gefunden.';
+    wrap.append(p);
+    return;
+  }
+  for (const f of liste) wrap.append(karte(f));
+}
+
+function karte(f) {
+  const k = document.createElement('article');
+  k.className = 'karte ' + ({ halb: 'halb', 'fast leer': 'knapp', eingetrocknet: 'weg', leer: 'weg' }[f.fuellstand] || '');
+
+  k.innerHTML = `
+    <div class="name"></div>
+    <div class="meta"></div>
+    <div class="notiz"></div>
+    <div class="zeile">
+      <select class="fs" aria-label="Füllstand"></select>
+      <div class="stepper">
+        <button class="minus" aria-label="Ein Topf weniger">−</button>
+        <span class="anz"></span>
+        <button class="plus" aria-label="Ein Topf mehr">+</button>
+      </div>
+    </div>
+    <div class="zeile">
+      <label class="check"><input type="checkbox" class="ek"> Einkaufen</label>
+      <div class="rechts">
+        <button class="gekauft primary">Gekauft ✓</button>
+        <button class="bearb">Bearbeiten</button>
+      </div>
+    </div>`;
+
+  // Texte mit textContent setzen, damit Sonderzeichen sicher angezeigt werden
+  k.querySelector('.name').textContent = f.name;
+  k.querySelector('.meta').textContent = [f.marke, f.typ, f.farbfamilie].filter(Boolean).join(' · ');
+  k.querySelector('.notiz').textContent = f.notizen || '';
+  k.querySelector('.anz').textContent = f.anzahl;
+
+  const fs = k.querySelector('.fs');
+  optionen(fs, FUELLSTAENDE);
+  fs.value = f.fuellstand;
+  fs.addEventListener('change', () => speichern(f.id, { fuellstand: fs.value }));
+
+  k.querySelector('.minus').addEventListener('click', () => {
+    if (f.anzahl > 0) speichern(f.id, { anzahl: f.anzahl - 1 });
+  });
+  k.querySelector('.plus').addEventListener('click', () => speichern(f.id, { anzahl: f.anzahl + 1 }));
+
+  const ek = k.querySelector('.ek');
+  ek.checked = f.einkaufen;
+  ek.addEventListener('change', () => speichern(f.id, { einkaufen: ek.checked }));
+
+  const gekauft = k.querySelector('.gekauft');
+  if (!brauchtKauf(f)) gekauft.classList.add('hidden');
+  gekauft.addEventListener('click', () =>
+    speichern(f.id, { fuellstand: 'voll', einkaufen: false, anzahl: Math.max(f.anzahl, 1) }));
+
+  k.querySelector('.bearb').addEventListener('click', () => formularOeffnen(f));
+  return k;
+}
+
+/* ============ 6. ÄNDERUNGEN SPEICHERN ============ */
+async function speichern(id, aenderung) {
+  const { error } = await db.from('farben').update(aenderung).eq('id', id);
+  if (error) {
+    alert('Speichern fehlgeschlagen: ' + error.message);
+    return laden();
+  }
+  Object.assign(farben.find(f => f.id === id), aenderung);
+  render();
+}
+
+/* ============ 7. FORMULAR: NEU / BEARBEITEN / LÖSCHEN ============ */
+function formularOeffnen(f = null) {
+  bearbeiteId = f ? f.id : null;
+  el('dlgTitel').textContent = f ? 'Farbe bearbeiten' : 'Neue Farbe';
+  el('fName').value = f ? f.name : '';
+  el('fMarke').value = f ? f.marke : 'Citadel';
+  el('fTyp').value = f ? (f.typ || 'Andere') : 'Base';
+  el('fFamilie').value = f ? (f.farbfamilie || '') : '';
+  el('fAnzahl').value = f ? f.anzahl : 1;
+  el('fFuell').value = f ? f.fuellstand : 'voll';
+  el('fEinkaufen').checked = f ? f.einkaufen : false;
+  el('fNotizen').value = f ? (f.notizen || '') : '';
+  el('formFehler').textContent = '';
+  el('loeschen').classList.toggle('hidden', !f);
+  el('dlg').showModal();
+}
+
+el('neu').addEventListener('click', () => formularOeffnen());
+el('abbrechen').addEventListener('click', () => el('dlg').close());
+
+el('formular').addEventListener('submit', async e => {
+  e.preventDefault();
+  const daten = {
+    name: el('fName').value.trim(),
+    marke: el('fMarke').value.trim(),
+    typ: el('fTyp').value,
+    farbfamilie: el('fFamilie').value.trim() || null,
+    anzahl: Math.max(0, parseInt(el('fAnzahl').value, 10) || 0),
+    fuellstand: el('fFuell').value,
+    einkaufen: el('fEinkaufen').checked,
+    notizen: el('fNotizen').value.trim() || null
+  };
+  const { error } = bearbeiteId
+    ? await db.from('farben').update(daten).eq('id', bearbeiteId)
+    : await db.from('farben').insert(daten);
+
+  if (error) {
+    el('formFehler').textContent = error.code === '23505'
+      ? 'Diese Farbe gibt es schon (gleicher Name und Marke).'
+      : 'Fehler: ' + error.message;
+    return;
+  }
+  el('dlg').close();
+  laden();
+});
+
+el('loeschen').addEventListener('click', async () => {
+  if (!confirm('Diese Farbe wirklich löschen?')) return;
+  const { error } = await db.from('farben').delete().eq('id', bearbeiteId);
+  if (error) { el('formFehler').textContent = 'Fehler: ' + error.message; return; }
+  el('dlg').close();
+  laden();
+});
+
+/* ============ 8. TABS UND FILTER ============ */
+function tab(neu) {
+  ansicht = neu;
+  el('tabAlle').classList.toggle('aktiv', neu === 'alle');
+  el('tabEinkauf').classList.toggle('aktiv', neu === 'einkauf');
+  render();
+}
+el('tabAlle').addEventListener('click', () => tab('alle'));
+el('tabEinkauf').addEventListener('click', () => tab('einkauf'));
+for (const id of ['suche', 'filterFamilie', 'filterTyp']) el(id).addEventListener('input', render);
+</script>
+</body>
+</html>
