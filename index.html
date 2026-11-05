@@ -76,6 +76,21 @@
   .zwei { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
   .knoepfe { display: flex; gap: 8px; margin-top: 16px; }
   .knoepfe .primary { margin-left: auto; }
+
+  /* Farbmuster (kleiner Kreis in der Farbe aus dem Katalog) */
+  .muster { display: inline-block; width: 14px; height: 14px; border-radius: 50%; flex: none;
+            border: 1px solid rgba(255,255,255,.25); vertical-align: -2px; margin-right: 6px; }
+
+  /* Vorschläge aus dem Katalog unter dem Namensfeld */
+  .vorschlag-feld { position: relative; }
+  #vorschlaege { position: absolute; left: 0; right: 0; top: 100%; z-index: 10; margin-top: 4px;
+                 background: var(--bg); border: 1px solid var(--line); border-radius: 8px;
+                 max-height: 260px; overflow-y: auto; }
+  .vorschlag { display: flex; align-items: center; width: 100%; text-align: left; background: transparent;
+               border: 0; border-bottom: 1px solid var(--line); border-radius: 0; padding: 9px 10px; }
+  .vorschlag:last-child { border-bottom: 0; }
+  .vorschlag:hover, .vorschlag:focus { background: var(--card); }
+  .vorschlag small { color: var(--muted); margin-left: auto; padding-left: 8px; text-align: right; }
 </style>
 </head>
 <body>
@@ -129,7 +144,20 @@
   <form id="formular" method="dialog">
     <h2 id="dlgTitel">Neue Farbe</h2>
     <label for="fName">Name</label>
-    <input id="fName" required placeholder="z. B. Abaddon Black">
+    <div class="vorschlag-feld">
+      <input id="fName" required autocomplete="off" placeholder="Tippen, z. B. Abad oder 72.120">
+      <div id="vorschlaege" class="hidden"></div>
+    </div>
+    <div class="zwei">
+      <div>
+        <label for="fLinie">Linie</label>
+        <input id="fLinie" placeholder="z. B. Base oder Game Color">
+      </div>
+      <div>
+        <label for="fCode">Nummer</label>
+        <input id="fCode" placeholder="z. B. 72.120">
+      </div>
+    </div>
     <div class="zwei">
       <div>
         <label for="fMarke">Marke</label>
@@ -199,6 +227,7 @@ el('dashboardLink').href =
 function optionen(select, werte) {
   for (const w of werte) select.append(new Option(w, w));
 }
+el('fTyp').append(new Option('–', ''));  // leer: z. B. Vallejo Game Color hat keinen festen Typ
 optionen(el('fTyp'), TYPEN);
 optionen(el('fFuell'), FUELLSTAENDE);
 optionen(el('filterTyp'), TYPEN);
@@ -210,7 +239,10 @@ db.auth.onAuthStateChange((event, session) => {
   el('app').classList.toggle('hidden', !drin);
   el('logout').classList.toggle('hidden', !drin);
   // Laden kurz verzögern: Supabase-Aufrufe direkt hier drin können hängen bleiben
-  if (drin && (event === 'INITIAL_SESSION' || event === 'SIGNED_IN')) setTimeout(laden, 0);
+  if (drin && (event === 'INITIAL_SESSION' || event === 'SIGNED_IN')) setTimeout(() => {
+    laden();
+    katalogLaden();
+  }, 0);
 });
 
 el('login').addEventListener('submit', async e => {
@@ -254,7 +286,28 @@ async function laden() {
     el('schlaf').classList.remove('hidden');
   }
 }
-el('nochmal').addEventListener('click', laden);
+el('nochmal').addEventListener('click', () => { laden(); katalogLaden(); });
+
+/* ============ 4b. KATALOG LADEN ============
+   Der Katalog (alle Citadel- und Vallejo-Farben) wird einmal nach dem Login
+   geladen und dann nur fürs Vorschlagen beim Erfassen benutzt.
+   Supabase liefert höchstens 1000 Zeilen pro Anfrage, darum holen wir
+   ihn in "Seiten" zu je 1000 Zeilen. */
+let katalog = [];
+
+async function katalogLaden() {
+  if (katalog.length) return;  // schon geladen
+  const SEITE = 1000;
+  const alle = [];
+  for (let von = 0; ; von += SEITE) {
+    const { data, error } = await db.from('katalog').select('*')
+      .order('id').range(von, von + SEITE - 1);
+    if (error) { console.warn('Katalog nicht geladen:', error.message); return; }
+    alle.push(...data);
+    if (data.length < SEITE) break;
+  }
+  katalog = alle;
+}
 
 /* ============ 5. ANZEIGEN ============ */
 function render() {
@@ -273,7 +326,7 @@ function render() {
   const typ = el('filterTyp').value;
 
   let liste = farben.filter(f =>
-    (!suche || (f.name + ' ' + f.marke).toLowerCase().includes(suche)) &&
+    (!suche || [f.name, f.marke, f.linie, f.code].join(' ').toLowerCase().includes(suche)) &&
     (!familie || f.farbfamilie === familie) &&
     (!typ || f.typ === typ)
   );
@@ -289,6 +342,14 @@ function render() {
     return;
   }
   for (const f of liste) wrap.append(karte(f));
+}
+
+// Kleiner farbiger Kreis
+function muster(hex) {
+  const m = document.createElement('span');
+  m.className = 'muster';
+  m.style.background = hex;
+  return m;
 }
 
 function karte(f) {
@@ -316,8 +377,13 @@ function karte(f) {
     </div>`;
 
   // Texte mit textContent setzen, damit Sonderzeichen sicher angezeigt werden
-  k.querySelector('.name').textContent = f.name;
-  k.querySelector('.meta').textContent = [f.marke, f.typ, f.farbfamilie].filter(Boolean).join(' · ');
+  const name = k.querySelector('.name');
+  if (f.hex) name.append(muster(f.hex));
+  name.append(f.name);
+  // Linie nur anzeigen, wenn sie etwas anderes sagt als der Typ (bei Citadel meist gleich)
+  const linie = f.linie && f.linie !== f.typ ? f.linie : null;
+  k.querySelector('.meta').textContent =
+    [f.marke, linie, f.typ, f.code, f.farbfamilie].filter(Boolean).join(' · ');
   k.querySelector('.notiz').textContent = f.notizen || '';
   k.querySelector('.anz').textContent = f.anzahl;
 
@@ -361,7 +427,10 @@ function formularOeffnen(f = null) {
   el('dlgTitel').textContent = f ? 'Farbe bearbeiten' : 'Neue Farbe';
   el('fName').value = f ? f.name : '';
   el('fMarke').value = f ? f.marke : 'Citadel';
-  el('fTyp').value = f ? (f.typ || 'Andere') : 'Base';
+  el('fLinie').value = f ? (f.linie || '') : '';
+  el('fCode').value = f ? (f.code || '') : '';
+  aktuellesHex = f ? f.hex : null;
+  el('fTyp').value = f ? (f.typ || '') : 'Base';
   el('fFamilie').value = f ? (f.farbfamilie || '') : '';
   el('fAnzahl').value = f ? f.anzahl : 1;
   el('fFuell').value = f ? f.fuellstand : 'voll';
@@ -369,7 +438,53 @@ function formularOeffnen(f = null) {
   el('fNotizen').value = f ? (f.notizen || '') : '';
   el('formFehler').textContent = '';
   el('loeschen').classList.toggle('hidden', !f);
+  el('vorschlaege').classList.add('hidden');
   el('dlg').showModal();
+}
+
+/* ============ 7b. VORSCHLÄGE AUS DEM KATALOG ============ */
+let aktuellesHex = null;  // Farbcode der gewählten Katalog-Farbe
+
+el('fName').addEventListener('input', () => {
+  aktuellesHex = null;  // von Hand geändert: Farbmuster passt evtl. nicht mehr
+  const suche = el('fName').value.trim().toLowerCase();
+  const box = el('vorschlaege');
+  box.replaceChildren();
+  if (suche.length < 2 || !katalog.length) { box.classList.add('hidden'); return; }
+
+  // Zuerst Farben, die mit dem Text beginnen, dann solche, die ihn nur enthalten
+  const passt = k => (k.name + ' ' + (k.code || '')).toLowerCase();
+  const treffer = [
+    ...katalog.filter(k => passt(k).startsWith(suche)),
+    ...katalog.filter(k => !passt(k).startsWith(suche) && passt(k).includes(suche))
+  ].slice(0, 12);
+  if (!treffer.length) { box.classList.add('hidden'); return; }
+
+  for (const k of treffer) {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'vorschlag';
+    b.append(muster(k.hex || 'transparent'), k.name);
+    const info = document.createElement('small');
+    const schonDa = farben.some(f => f.marke === k.marke && f.name === k.name && (f.linie || f.typ) === k.linie);
+    info.textContent = [k.marke, k.linie, k.code].filter(Boolean).join(' · ') + (schonDa ? ' ✓ habt ihr' : '');
+    b.append(info);
+    b.addEventListener('click', () => katalogUebernehmen(k));
+    box.append(b);
+  }
+  box.classList.remove('hidden');
+});
+
+function katalogUebernehmen(k) {
+  el('fName').value = k.name;
+  el('fMarke').value = k.marke;
+  el('fLinie').value = k.linie;
+  el('fCode').value = k.code || '';
+  el('fTyp').value = k.typ || '';
+  el('fFamilie').value = k.farbfamilie || '';
+  aktuellesHex = k.hex;
+  el('vorschlaege').classList.add('hidden');
+  el('fAnzahl').focus();
 }
 
 el('neu').addEventListener('click', () => formularOeffnen());
@@ -380,7 +495,10 @@ el('formular').addEventListener('submit', async e => {
   const daten = {
     name: el('fName').value.trim(),
     marke: el('fMarke').value.trim(),
-    typ: el('fTyp').value,
+    linie: el('fLinie').value.trim() || null,
+    code: el('fCode').value.trim() || null,
+    hex: aktuellesHex,
+    typ: el('fTyp').value || null,
     farbfamilie: el('fFamilie').value.trim() || null,
     anzahl: Math.max(0, parseInt(el('fAnzahl').value, 10) || 0),
     fuellstand: el('fFuell').value,
@@ -393,7 +511,7 @@ el('formular').addEventListener('submit', async e => {
 
   if (error) {
     el('formFehler').textContent = error.code === '23505'
-      ? 'Diese Farbe gibt es schon (gleicher Name und Marke).'
+      ? 'Diese Farbe gibt es schon (gleicher Name, Marke und Linie).'
       : 'Fehler: ' + error.message;
     return;
   }
