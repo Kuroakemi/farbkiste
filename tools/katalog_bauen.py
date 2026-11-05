@@ -68,6 +68,28 @@ def tabelle(datei):
     return zeilen
 
 
+# Farbwörter im Namen -> Farbfamilie. Der Name ist meist die zuverlässigste Angabe.
+NAMENSWOERTER = [
+    (r"black|negro|noir", "Schwarz"), (r"white|blanco|ivory", "Weiss"), (r"gr[ae]y|ash", "Grau"),
+    (r"red|crimson|scarlet|blood|carmine|rojo", "Rot"), (r"orange|ochre|amber", "Orange"),
+    (r"yellow|amarillo|sand|cream", "Gelb"), (r"green|olive|verde|emerald|jade|lime", "Grün"),
+    (r"turquoise|teal|cyan|aqua", "Türkis"), (r"blue|azul|navy|sky|ultramarine", "Blau"),
+    (r"purple|violet|lilac|lavender|magenta|plum", "Violett"), (r"pink|rose|rosa", "Pink"),
+    (r"brown|leather|wood|earth|rust|mud|tan|khaki|marron|chocolate|beige", "Braun"),
+    (r"flesh|skin|kislev|cadian fleshtone", "Hautton"), (r"bone|ushabti|wraithbone|bleached", "Knochen"),
+]
+
+
+def familie_aus_name(name):
+    """Sucht das LETZTE Farbwort im Namen ("Yellow Olive" -> Olive -> Grün)."""
+    bester = None
+    for muster, familie in NAMENSWOERTER:
+        for m in re.finditer(r"\b(" + muster + r")\b", name, re.I):
+            if bester is None or m.start() > bester[0]:
+                bester = (m.start(), familie)
+    return bester[1] if bester else None
+
+
 def familie_aus_farbe(r, g, b):
     """Notlösung, wenn keine Familie bekannt ist: aus dem Farbton schätzen."""
     h, s, v = colorsys.rgb_to_hsv(r / 255, g / 255, b / 255)
@@ -100,13 +122,13 @@ def hinzufuegen(marke, name, linie, typ, code, r, g, b, extra):
         return
     # Genauere Daten aus minipainter übernehmen, wenn der Name passt
     # Metallfarben zuerst erkennen: die Quellen ordnen sie oft nach Farbton ein
-    familie = "Metallic" if ist_metall(name, linie) else None
-    if extra and not familie:
+    familie = "Metallic" if ist_metall(name, linie) else familie_aus_name(name)
+    if extra:
         fams = [FAMILIEN[f] for f in extra["color_families"] if f in FAMILIEN]
         if KEIN_METALL.search(name) or not METALL.search(name):
             # Die Quelle markiert manche normalen Farben als Metallic, z. B. "Ultramarine Blue"
             fams = [f for f in fams if f != "Metallic"]
-        if fams:
+        if fams and not familie:
             familie = "Metallic" if "Metallic" in fams else fams[0]
         # Farbcode nur übernehmen, wenn es keine abweichende Variante (z. B. Air) ist
         if linie in ("Base", "Layer", "Shade", "Contrast", "Technical", "Dry", "Game Color"):
@@ -144,7 +166,8 @@ ausgabe.write_text(
     "-- SCHRITT 3 von 3 (nach 02_katalog_tabelle.sql ausführen)\n"
     "-- Automatisch erzeugt von tools/katalog_bauen.py. Quellen und Lizenzen: LIZENZEN.md\n"
     "insert into public.katalog (marke, name, linie, typ, code, farbfamilie, hex)\nvalues\n"
-    + werte + "\non conflict (marke, name, linie) do nothing;\n\n"
+    + werte + "\non conflict (marke, name, linie) do update\n"
+    "  set typ = excluded.typ, code = excluded.code, farbfamilie = excluded.farbfamilie, hex = excluded.hex;\n\n"
     "-- Bereits erfasste Citadel-Farben mit dem Katalog verbinden (Linie und Farbcode ergänzen)\n"
     "update public.farben f\n"
     "set linie = k.linie, code = k.code, hex = k.hex\n"
