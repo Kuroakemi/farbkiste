@@ -64,6 +64,13 @@
   #status { color: var(--muted); font-size: .9rem; margin: 8px 0; }
 
   /* Farbkarten */
+  /* Wischen zum Löschen: hinter der Karte liegt ein roter Löschen-Knopf */
+  .wisch { position: relative; margin-bottom: 10px; border-radius: 10px; overflow: hidden; }
+  .wisch .weg-knopf { position: absolute; top: 0; right: 0; bottom: 0; width: 96px; border: 0; border-radius: 0;
+                      background: var(--bad); color: #2a0a0a; font-weight: 700; display: flex; flex-direction: column;
+                      align-items: center; justify-content: center; gap: 4px; }
+  .wisch .karte { position: relative; margin-bottom: 0; touch-action: pan-y; transition: transform .2s ease; }
+  .wisch .karte.zieht { transition: none; }
   .karte { background: var(--card); border: 1px solid var(--line); border-left: 5px solid var(--ok);
            border-radius: 10px; padding: 12px; margin-bottom: 10px; }
   .karte.halb { border-left-color: var(--mid); }
@@ -404,7 +411,7 @@ function render() {
 
   const wrap = el('liste');
   wrap.replaceChildren();
-  for (const f of liste) wrap.append(karte(f));
+  for (const f of liste) wrap.append(wischbar(karte(f), f));
 
   // Bei einer Suche zusätzlich passende Katalog-Farben zeigen, die ihr noch nicht habt
   const ausKatalog = (ansicht === 'alle' && suche.length >= 2)
@@ -522,6 +529,75 @@ function karte(f) {
 
   k.querySelector('.bearb').addEventListener('click', () => formularOeffnen(f));
   return k;
+}
+
+/* ============ 5b. NACH LINKS WISCHEN ZUM LÖSCHEN ============
+   Die Karte lässt sich mit dem Finger (oder der Maus) nach links ziehen.
+   Dahinter erscheint ein roter "Löschen"-Knopf. */
+const KNOPF_BREITE = 96;
+let offeneKarte = null;  // nur eine Karte gleichzeitig offen
+
+function wischbar(k, f) {
+  const huelle = document.createElement('div');
+  huelle.className = 'wisch';
+  const knopf = document.createElement('button');
+  knopf.className = 'weg-knopf';
+  knopf.type = 'button';
+  knopf.innerHTML = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>Löschen';
+  knopf.addEventListener('click', () => loeschen(f));
+  huelle.append(knopf, k);
+
+  let startX = 0, startY = 0, versatz = 0, basis = 0, modus = null;  // modus: null | 'wischen' | 'scrollen'
+  let geradeGewischt = false;  // der Klick direkt nach dem Wischen soll die Karte nicht gleich schliessen
+  const setze = x => { versatz = x; k.style.transform = x ? `translateX(${x}px)` : ''; };
+  const schliessen = () => { setze(0); if (offeneKarte === schliessen) offeneKarte = null; };
+
+  k.addEventListener('pointerdown', e => {
+    if (e.target.closest('select, input, button, label, textarea')) return;  // Bedienelemente nicht stören
+    startX = e.clientX; startY = e.clientY; basis = versatz; modus = null;
+  });
+  k.addEventListener('pointermove', e => {
+    if (startX === null || e.buttons === 0 && e.pointerType === 'mouse') return;
+    const dx = e.clientX - startX, dy = e.clientY - startY;
+    if (modus === null) {
+      if (Math.abs(dx) < 8 && Math.abs(dy) < 8) return;
+      modus = Math.abs(dx) > Math.abs(dy) ? 'wischen' : 'scrollen';
+      if (modus === 'wischen') {
+        if (offeneKarte && offeneKarte !== schliessen) offeneKarte();
+        k.setPointerCapture(e.pointerId);
+        k.classList.add('zieht');
+      }
+    }
+    if (modus === 'wischen') setze(Math.min(0, Math.max(-KNOPF_BREITE - 30, basis + dx)));
+  });
+  const loslassen = () => {
+    if (modus === 'wischen') {
+      geradeGewischt = true;
+      setTimeout(() => { geradeGewischt = false; }, 350);
+      k.classList.remove('zieht');
+      if (versatz < -KNOPF_BREITE / 2) { setze(-KNOPF_BREITE); offeneKarte = schliessen; }
+      else schliessen();
+    }
+    startX = null; modus = null;
+  };
+  k.addEventListener('pointerup', loslassen);
+  k.addEventListener('pointercancel', loslassen);
+  // Tippen auf eine offene Karte schliesst sie wieder
+  k.addEventListener('click', e => {
+    if (geradeGewischt) return;
+    if (versatz !== 0 && !e.target.closest('select, input, button')) { e.preventDefault(); schliessen(); }
+  });
+  startX = null;
+  return huelle;
+}
+
+async function loeschen(f) {
+  if (!confirm(`„${f.name}“ wirklich endgültig löschen?`)) return;
+  const { error } = await db.from('farben').delete().eq('id', f.id);
+  if (error) { alert('Löschen fehlgeschlagen: ' + error.message); return; }
+  offeneKarte = null;
+  farben = farben.filter(x => x.id !== f.id);
+  render();
 }
 
 /* ============ 6. ÄNDERUNGEN SPEICHERN ============ */
