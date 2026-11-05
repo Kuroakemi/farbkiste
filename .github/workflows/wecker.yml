@@ -1,0 +1,31 @@
+# Wecker: Schickt zweimal pro Woche eine kleine Anfrage an Supabase,
+# damit das Gratis-Projekt nicht wegen Inaktivität pausiert wird.
+name: Supabase-Wecker
+
+on:
+  schedule:
+    # Montag und Donnerstag um 07:17 UTC (Zeiten in UTC, wie bei der Datenbank)
+    - cron: "17 7 * * 1,4"
+  # Erlaubt, den Wecker auf GitHub unter "Actions" auch von Hand zu starten
+  workflow_dispatch:
+
+jobs:
+  wecken:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Supabase anpingen
+        env:
+          # Derselbe öffentliche Schlüssel wie in der Webseite
+          SUPABASE_URL: https://vuskyttdyznbbmphywqu.supabase.co
+          SUPABASE_KEY: sb_publishable_FwTRL0rGAuqm9xC_60dnig_xMqKZZDx
+        run: |
+          # Fragt die Tabelle "farben" ab. Ohne Login liefert RLS eine leere
+          # Liste zurück, aber die Anfrage zählt trotzdem als Aktivität.
+          status=$(curl -s -o antwort.txt -w "%{http_code}" \
+            "$SUPABASE_URL/rest/v1/farben?select=id&limit=1" \
+            -H "apikey: $SUPABASE_KEY")
+          echo "HTTP-Status: $status"
+          cat antwort.txt
+          # Schlägt fehl, wenn Supabase nicht mit 200 antwortet, z. B. wenn
+          # das Projekt schon pausiert ist. Dann schickt GitHub dir eine Mail.
+          test "$status" = "200"
