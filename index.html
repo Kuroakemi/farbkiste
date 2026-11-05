@@ -132,6 +132,68 @@
   .hinweis { background: #3a2a14; border: 1px solid var(--warn); border-radius: 8px;
              padding: 9px 10px; margin-top: 8px; font-size: .9rem; }
   .hinweis button { margin-top: 6px; }
+
+  /* ===== Armeen & Rezepte ===== */
+  .tabs button { padding: 10px 4px; }
+  .abschnitt { color: var(--muted); font-size: .85rem; margin: 18px 0 8px; display: flex;
+               justify-content: space-between; align-items: center; }
+  .abschnitt button { background: transparent; border: 0; color: var(--accent); font-weight: 600; padding: 8px 0; }
+  .kreise { display: flex; }
+  .kreise .muster { width: 18px; height: 18px; margin: 0 0 0 -6px; border: 2px solid var(--card); }
+  .kreise .muster:first-child { margin-left: 0; }
+  .gerade-dran { background: #2a1a0c; border: 1px solid var(--accent); border-radius: 12px; padding: 14px;
+                 display: flex; flex-direction: column; gap: 10px; margin-bottom: 6px; }
+  .gerade-dran .label { font-size: .75rem; font-weight: 700; letter-spacing: .08em; color: var(--accent-hell); }
+  .gerade-dran .gross { font-size: 1.4rem; font-weight: 700; }
+  .gerade-dran .kreise .muster { width: 22px; height: 22px; border-color: #2a1a0c; margin-left: 4px; }
+  .gerade-dran .kreise .muster:first-child { margin-left: 0; }
+  .gerade-dran .info { font-size: .9rem; color: #d8cfc4; }
+  .knopf-link { align-self: flex-start; background: var(--accent); color: #2a1200; text-decoration: none;
+                font-weight: 700; border-radius: 8px; padding: 10px 16px; }
+  .zeile-link { display: flex; align-items: center; gap: 12px; background: var(--card); border: 1px solid var(--line);
+                border-radius: 12px; padding: 12px 14px; color: var(--text); text-decoration: none; margin-bottom: 8px; }
+  .zeile-link .text { flex: 1; min-width: 0; }
+  .zeile-link .titel2 { font-weight: 600; }
+  .zeile-link small { display: block; color: var(--muted); font-size: .82rem; margin-top: 3px; }
+  .pfeil { color: var(--muted); flex: none; }
+  .zurueck { display: inline-flex; align-items: center; gap: 4px; color: var(--accent); text-decoration: none;
+             font-weight: 600; min-height: 44px; }
+  .seitenkopf { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+  .seitenkopf h2 { margin: 0; font-size: 1.6rem; }
+  .pille { border-radius: 99px; font-size: .85rem; font-weight: 700; padding: 8px 12px; }
+  .pille.an { background: #2a1a0c; border-color: var(--accent); color: var(--accent-hell); }
+  .notizbox { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px;
+              margin-top: 12px; white-space: pre-line; line-height: 1.45; }
+  .notizbox .label, .bedarf .label { display: block; font-size: .72rem; font-weight: 700; letter-spacing: .08em;
+              color: var(--muted); margin-bottom: 6px; white-space: normal; }
+  .notizbox.leer-notiz { color: var(--muted); font-style: italic; }
+  .bedarf { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px;
+            display: flex; flex-direction: column; gap: 10px; margin-top: 12px; }
+  .bedarf .pillen { display: flex; gap: 8px; flex-wrap: wrap; }
+  .p-da { background: #1d3a2b; color: var(--ok); border-radius: 99px; padding: 3px 10px; font-size: .82rem; font-weight: 700; }
+  .p-fehlt { background: #3d1f1f; color: #f08a8a; border-radius: 99px; padding: 3px 10px; font-size: .82rem; font-weight: 700; }
+  button.p-fehlt { border: 0; padding: 5px 10px; }
+  .zeitleiste { margin-top: 8px; }
+  .schritt { display: flex; gap: 12px; }
+  .schritt .spur { display: flex; flex-direction: column; align-items: center; flex: none; width: 28px; }
+  .schritt .nr { width: 28px; height: 28px; border-radius: 50%; background: #2a1a0c; border: 1px solid var(--accent);
+                 color: var(--accent-hell); font-size: .8rem; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+  .schritt .linie { width: 2px; flex: 1; background: var(--line); min-height: 10px; }
+  .schritt .inhalt { flex: 1; min-width: 0; padding-bottom: 14px; }
+  .schritt .phase { font-size: .72rem; font-weight: 700; letter-spacing: .08em; color: var(--muted); margin: 6px 0; }
+  .schritt-karte { display: block; width: 100%; text-align: left; background: var(--card); border: 1px solid var(--line);
+                   border-radius: 10px; padding: 10px 12px; }
+  .schritt-karte .oben { display: flex; align-items: center; gap: 8px; }
+  .schritt-karte .muster { margin: 0; }
+  .schritt-karte .wer { flex: 1; min-width: 0; }
+  .schritt-karte .wer b { display: block; }
+  .schritt-karte small { color: var(--muted); font-size: .8rem; }
+  .schritt-karte .notiz2 { font-size: .88rem; color: #c9cdd6; margin-top: 8px; white-space: pre-line; }
+  .plus-gestrichelt { margin-left: 40px; background: transparent; border: 1px dashed #4a4e5c; color: var(--accent); font-weight: 600; }
+  .gewaehlt { display: flex; align-items: center; gap: 8px; background: var(--bg); border: 1px solid var(--line);
+              border-radius: 8px; padding: 8px 10px; margin-top: 6px; }
+  .gewaehlt span.n { flex: 1; }
+  .gewaehlt button { padding: 4px 10px; }
 </style>
 </head>
 <body>
@@ -174,10 +236,14 @@
     </div>
 
     <div class="tabs">
-      <button id="tabAlle" class="aktiv">Alle Farben</button>
-      <button id="tabEinkauf">Einkaufsliste<span id="anzahlEinkauf" class="badge">0</span></button>
+      <button id="tabAlle" class="aktiv">Farben</button>
+      <button id="tabArmeen">Armeen</button>
+      <button id="tabEinkauf">Einkauf<span id="anzahlEinkauf" class="badge">0</span></button>
     </div>
 
+    <div id="armeenBereich" class="hidden"></div>
+
+    <div id="farbenBereich">
     <div class="filter">
       <input id="suche" type="search" placeholder="Suchen in euren Farben und im Katalog">
       <select id="filterFamilie"><option value="">Alle Farbfamilien</option></select>
@@ -186,6 +252,7 @@
 
     <div id="status"></div>
     <div id="liste"></div>
+    </div>
     <button id="neu" class="primary">+ Farbe</button>
   </section>
 </main>
@@ -244,6 +311,67 @@
   </form>
 </dialog>
 
+<!-- FORMULAR: Armee -->
+<dialog id="dlgArmee">
+  <form id="formArmee" method="dialog">
+    <h2 id="armeeTitel">Neue Armee</h2>
+    <label for="aName">Name</label>
+    <input id="aName" required placeholder="z. B. Death Guard">
+    <label for="aNotizen">Notizen zur ganzen Armee</label>
+    <textarea id="aNotizen" rows="4" placeholder="z. B. Alle mit Death Guard Green gesprayt …"></textarea>
+    <div id="armeeFehler" class="fehler"></div>
+    <div class="knoepfe">
+      <button type="button" id="armeeLoeschen" class="danger hidden">Löschen</button>
+      <button type="button" data-schliessen>Abbrechen</button>
+      <button type="submit" class="primary">Speichern</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- FORMULAR: Rezept -->
+<dialog id="dlgRezept">
+  <form id="formRezept" method="dialog">
+    <h2 id="rezeptTitel">Neues Rezept</h2>
+    <label for="rName">Name</label>
+    <input id="rName" required placeholder="z. B. Rüstung, Mantel, Base">
+    <label for="rNotizen">Notizen</label>
+    <textarea id="rNotizen" rows="4" placeholder="z. B. Shade über Nacht trocknen lassen"></textarea>
+    <div id="rezeptFehler" class="fehler"></div>
+    <div class="knoepfe">
+      <button type="button" id="rezeptLoeschen" class="danger hidden">Löschen</button>
+      <button type="button" data-schliessen>Abbrechen</button>
+      <button type="submit" class="primary">Speichern</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- FORMULAR: Schritt -->
+<dialog id="dlgSchritt">
+  <form id="formSchritt" method="dialog">
+    <h2 id="schrittTitel">Neuer Schritt</h2>
+    <label for="sPhase">Was für ein Schritt?</label>
+    <select id="sPhase"></select>
+    <label for="sFarbe">Farbe (optional)</label>
+    <div class="vorschlag-feld">
+      <input id="sFarbe" autocomplete="off" placeholder="Tippen, z. B. Agrax oder 72.0">
+      <div id="sVorschlaege" class="hidden"></div>
+    </div>
+    <div id="sGewaehlt" class="gewaehlt hidden"></div>
+    <label for="sText">Produkt oder Technik (optional)</label>
+    <input id="sText" placeholder="z. B. Eis-Effekt von Green Stuff World">
+    <label for="sNotiz">Notiz</label>
+    <textarea id="sNotiz" rows="2" placeholder="z. B. Nur in die Ritzen tupfen"></textarea>
+    <div id="schrittFehler" class="fehler"></div>
+    <div class="knoepfe" style="flex-wrap: wrap">
+      <button type="button" id="schrittHoch" class="hidden" aria-label="Schritt nach oben">↑</button>
+      <button type="button" id="schrittRunter" class="hidden" aria-label="Schritt nach unten">↓</button>
+      <button type="button" id="schrittLoeschen" class="danger hidden">Löschen</button>
+      <button type="button" data-schliessen>Abbrechen</button>
+      <button type="submit" class="primary">Speichern</button>
+    </div>
+  </form>
+</dialog>
+
 <datalist id="marken">
   <option value="Citadel"><option value="Vallejo"><option value="The Army Painter"><option value="AK Interactive"><option value="Scale75">
 </datalist>
@@ -291,12 +419,16 @@ const SPRUECHE = [
   'Wasserbecher ≠ Kaffeetasse.',
   'Noch eine Farbe kaufen? Immer.'
 ];
+// Ab und zu (etwa jedes 8. Mal) erscheint stattdessen eine kleine Liebeserklärung
+const LIEBE = ['Ich lieb di, Schatz ❤️', 'Du bisch de Bescht! ❤️', 'Schön, dass es di git ❤️'];
+const selten = () => Math.random() < 1 / 8;
 let spruchNr = Math.floor(Math.random() * SPRUECHE.length);
 function neuerSpruch() {
+  if (selten()) { el('spruch').textContent = LIEBE[Math.floor(Math.random() * LIEBE.length)]; return; }
   spruchNr = (spruchNr + 1) % SPRUECHE.length;
   el('spruch').textContent = SPRUECHE[spruchNr];
 }
-el('spruch').textContent = SPRUECHE[spruchNr];
+el('spruch').textContent = selten() ? LIEBE[0] : SPRUECHE[spruchNr];
 el('spruch').addEventListener('click', neuerSpruch);
 
 // Dropdowns befüllen
@@ -318,6 +450,7 @@ db.auth.onAuthStateChange((event, session) => {
   if (drin && (event === 'INITIAL_SESSION' || event === 'SIGNED_IN')) setTimeout(() => {
     laden();
     katalogLaden();
+    armeenLaden();
   }, 0);
 });
 
@@ -397,6 +530,7 @@ function render() {
   el('familien').replaceChildren(...familien.map(f => new Option(f)));
 
   el('anzahlEinkauf').textContent = farben.filter(brauchtKauf).length;
+  if (ansicht === 'armeen') { renderArmeen(); return; }
 
   const suche = el('suche').value.trim().toLowerCase();
   const familie = el('filterFamilie').value;
@@ -728,15 +862,438 @@ el('loeschen').addEventListener('click', async () => {
   laden();
 });
 
+/* ============ 7c. ARMEEN, REZEPTE UND SCHRITTE ============ */
+const PHASEN = ['Grundierung', 'Base', 'Shade', 'Layer', 'Highlight', 'Drybrush', 'Effekt', 'Basing', 'Sonstiges'];
+optionen(el('sPhase'), PHASEN);
+
+let armeen = [], rezepte = [], schritte = [];
+let armeenFehler = null;        // z. B. wenn die Tabellen noch fehlen
+let bearbeiteArmee = null, bearbeiteRezept = null, bearbeiteSchritt = null;
+let neuesRezeptFuer = null, neuerSchrittFuer = null;
+let schrittWahl = { farbe_id: null, katalog_id: null };
+
+// Schützt vor kaputter Anzeige, wenn jemand < oder & in einen Namen schreibt
+const esc = t => String(t ?? '').replace(/[&<>"']/g, z => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[z]));
+const kreis = hex => `<span class="muster" style="background:${esc(hex || 'transparent')}"></span>`;
+const plural = (n, eins, mehr) => `${n} ${n === 1 ? eins : mehr}`;
+
+async function armeenLaden() {
+  const [a, r, s] = await Promise.all([
+    db.from('armeen').select('*').order('name'),
+    db.from('rezepte').select('*').order('name'),
+    db.from('schritte').select('*').order('position')
+  ]);
+  const fehler = a.error || r.error || s.error;
+  armeenFehler = fehler ? fehler.message : null;
+  if (!fehler) { armeen = a.data; rezepte = r.data; schritte = s.data; }
+  if (ansicht === 'armeen') renderArmeen();
+}
+
+// Welche Farbe gehört zu einem Schritt, und habt ihr sie?
+function farbInfo(s) {
+  const kat = s.katalog_id ? katalog.find(k => k.id === s.katalog_id) : null;
+  let eigene = s.farbe_id ? farben.find(f => f.id === s.farbe_id) : null;
+  if (!eigene && kat) eigene = eigeneFarbe(kat);
+  const q = eigene || kat;
+  if (!q) return null;
+  const da = !!eigene && eigene.anzahl > 0 && !['leer', 'eingetrocknet'].includes(eigene.fuellstand);
+  return {
+    schluessel: eigene ? 'f' + eigene.id : 'k' + kat.id,
+    name: q.name, hex: q.hex, eigene, kat, da,
+    aufListe: !da && !!eigene && eigene.einkaufen,  // fehlt, steht aber schon auf der Einkaufsliste
+    unter: [q.marke, q.linie || q.typ, q.code].filter(Boolean).join(' · ')
+  };
+}
+
+// Alle verschiedenen Farben einer Liste von Schritten
+function farbenAus(liste) {
+  const map = new Map();
+  for (const s of liste) { const i = farbInfo(s); if (i && !map.has(i.schluessel)) map.set(i.schluessel, i); }
+  return [...map.values()];
+}
+const schritteVon = rezeptId => schritte.filter(s => s.rezept_id === rezeptId).sort((a, b) => a.position - b.position);
+const rezepteVon = armeeId => rezepte.filter(r => r.armee_id === armeeId);
+const schritteDerArmee = armeeId => rezepteVon(armeeId).flatMap(r => schritteVon(r.id));
+
+function wannText(datum) {
+  const tage = Math.floor((Date.now() - new Date(datum)) / 86400000);
+  if (tage <= 0) return 'heute';
+  if (tage === 1) return 'gestern';
+  if (tage < 14) return `vor ${tage} Tagen`;
+  return `vor ${Math.round(tage / 7)} Wochen`;
+}
+
+function renderArmeen() {
+  const bereich = el('armeenBereich');
+  if (armeenFehler) {
+    bereich.innerHTML = `<p class="leer">Die Armeen-Tabellen fehlen noch in der Datenbank.<br>
+      Bitte <b>sql/05_armeen_rezepte.sql</b> in Supabase ausführen.</p>`;
+    return;
+  }
+  const m = location.hash.match(/^#(armee|rezept)-(\d+)/);
+  if (m && m[1] === 'armee') {
+    const a = armeen.find(x => x.id === +m[2]);
+    if (a) return renderArmee(bereich, a);
+  }
+  if (m && m[1] === 'rezept') {
+    const r = rezepte.find(x => x.id === +m[2]);
+    if (r) return renderRezept(bereich, r);
+  }
+  renderArmeeListe(bereich);
+}
+
+function renderArmeeListe(bereich) {
+  const aktiv = armeen.find(a => a.aktiv);
+  let html = '';
+  if (aktiv) {
+    const f = farbenAus(schritteDerArmee(aktiv.id));
+    const fehlen = f.filter(x => !x.da).length;
+    html += `<div class="gerade-dran">
+      <span class="label">✎ GERADE DRAN</span>
+      <span class="gross">${esc(aktiv.name)}</span>
+      ${f.length ? `<div class="kreise">${f.slice(0, 8).map(x => kreis(x.hex)).join('')}</div>` : ''}
+      <span class="info">${plural(rezepteVon(aktiv.id).length, 'Rezept', 'Rezepte')} · ${plural(f.length, 'Farbe', 'Farben')}${fehlen ? ` · <b style="color:var(--accent-hell)">${fehlen} ${fehlen === 1 ? 'fehlt' : 'fehlen'}</b>` : ''}</span>
+      <a class="knopf-link" href="#armee-${aktiv.id}">Weitermalen →</a>
+    </div>`;
+  }
+  const andere = armeen.filter(a => a !== aktiv);
+  html += `<div class="abschnitt"><span>${aktiv ? 'Weitere Armeen' : 'Eure Armeen'}</span>
+    <button type="button" data-aktion="armee-neu">+ Armee</button></div>`;
+  if (!armeen.length) html += `<p class="leer">Noch keine Armeen. Legt mit „+ Armee“ die erste an!</p>`;
+  for (const a of andere) {
+    const f = farbenAus(schritteDerArmee(a.id));
+    const n = rezepteVon(a.id).length;
+    html += `<a class="zeile-link" href="#armee-${a.id}">
+      <span class="text"><span class="titel2">${esc(a.name)}</span>
+        <small>${n ? plural(n, 'Rezept', 'Rezepte') + ' · ' + plural(f.length, 'Farbe', 'Farben') : 'Noch keine Rezepte'}</small></span>
+      <span class="kreise">${f.slice(0, 5).map(x => kreis(x.hex)).join('')}</span>
+      <span class="pfeil">›</span></a>`;
+  }
+  bereich.innerHTML = html;
+}
+
+function renderArmee(bereich, a) {
+  const f = farbenAus(schritteDerArmee(a.id));
+  const fehlen = f.filter(x => !x.da);
+  const offen = fehlen.filter(x => !x.aufListe);  // fehlt und noch nicht auf der Einkaufsliste
+  let html = `<a class="zurueck" href="#armeen">‹ Alle Armeen</a>
+    <div class="seitenkopf"><h2>${esc(a.name)}</h2>
+      <div style="display:flex;gap:6px">
+        <button type="button" class="pille ${a.aktiv ? 'an' : ''}" data-aktion="armee-aktiv" data-id="${a.id}">${a.aktiv ? '✎ Gerade dran' : 'Gerade dran?'}</button>
+        <button type="button" data-aktion="armee-bearbeiten" data-id="${a.id}">Bearbeiten</button>
+      </div></div>
+    <div class="notizbox ${a.notizen ? '' : 'leer-notiz'}"><span class="label">NOTIZEN</span>${a.notizen ? esc(a.notizen) : 'Noch keine Notizen – über „Bearbeiten“ hinzufügen.'}</div>
+    <div class="abschnitt"><span>Rezepte</span><button type="button" data-aktion="rezept-neu" data-id="${a.id}">+ Rezept</button></div>`;
+  const rs = rezepteVon(a.id);
+  if (!rs.length) html += `<p class="leer" style="padding:12px 0">Noch keine Rezepte, z. B. „Rüstung“ oder „Base“.</p>`;
+  for (const r of rs) {
+    const ss = schritteVon(r.id);
+    const rf = farbenAus(ss);
+    html += `<a class="zeile-link" href="#rezept-${r.id}">
+      <span class="text"><span class="titel2">${esc(r.name)}</span>
+        <small>${plural(ss.length, 'Schritt', 'Schritte')} · bearbeitet ${wannText(r.geaendert_am)}</small></span>
+      <span class="kreise">${rf.slice(0, 5).map(x => kreis(x.hex)).join('')}</span>
+      <span class="pfeil">›</span></a>`;
+  }
+  if (f.length) {
+    html += `<div class="bedarf">
+      <div style="display:flex;justify-content:space-between"><b>Farben für diese Armee</b><span style="color:var(--muted);font-size:.85rem">${plural(f.length, 'Farbe', 'Farben')}</span></div>
+      <div class="pillen"><span class="p-da">✓ ${f.length - fehlen.length} vorhanden</span>${fehlen.length ? `<span class="p-fehlt">${fehlen.length} ${fehlen.length === 1 ? 'fehlt' : 'fehlen'}</span>` : ''}</div>
+      ${!fehlen.length ? '<div style="color:var(--ok)">Alles da – los geht’s! 🎨</div>'
+        : `<div>Fehlt: ${fehlen.map(x => `<b>${esc(x.name)}</b>${x.aufListe ? ' 🛒' : ''}`).join(', ')}</div>
+        ${offen.length
+          ? `<button type="button" class="primary" data-aktion="fehlende-einkauf" data-id="${a.id}">${offen.length === 1 ? 'Fehlende Farbe' : `${offen.length} fehlende Farben`} auf die Einkaufsliste</button>`
+          : '<div style="color:var(--muted)">🛒 Alles Fehlende steht schon auf der Einkaufsliste.</div>'}`}
+    </div>`;
+  }
+  bereich.innerHTML = html;
+}
+
+function renderRezept(bereich, r) {
+  const a = armeen.find(x => x.id === r.armee_id);
+  const ss = schritteVon(r.id);
+  const fehlen = farbenAus(ss).filter(x => !x.da).length;
+  let html = `<a class="zurueck" href="#armee-${r.armee_id}">‹ ${esc(a ? a.name : 'Armee')}</a>
+    <div class="seitenkopf"><h2>${esc(r.name)}</h2>
+      <button type="button" data-aktion="rezept-bearbeiten" data-id="${r.id}">Bearbeiten</button></div>
+    <div style="color:var(--muted);font-size:.85rem;margin-top:4px">${plural(ss.length, 'Schritt', 'Schritte')}${fehlen ? ` · ${plural(fehlen, 'Farbe fehlt', 'Farben fehlen')}` : ''}</div>
+    <div class="zeitleiste">`;
+  ss.forEach((s, i) => {
+    const info = farbInfo(s);
+    let oben = '';
+    if (info) {
+      oben = `${kreis(info.hex)}<span class="wer"><b>${esc(info.name)}</b><small>${esc(info.unter)}</small></span>
+        ${info.da ? '<span class="p-da">✓ da</span>' : `<span class="p-fehlt">fehlt</span>`}`;
+    } else {
+      oben = `<span class="wer"><b>${esc(s.text || '–')}</b></span>`;
+    }
+    html += `<div class="schritt">
+      <div class="spur"><div class="nr">${i + 1}</div><div class="linie"></div></div>
+      <div class="inhalt"><div class="phase">${esc(s.phase.toUpperCase())}</div>
+        <button type="button" class="schritt-karte" data-aktion="schritt-bearbeiten" data-id="${s.id}">
+          <div class="oben">${oben}</div>
+          ${info && s.text ? `<div class="notiz2"><b>${esc(s.text)}</b></div>` : ''}
+          ${s.notiz ? `<div class="notiz2">${esc(s.notiz)}</div>` : ''}
+        </button>
+        ${info && !info.da ? (info.aufListe
+          ? '<div style="color:var(--muted);font-size:.85rem;margin-top:6px">🛒 Steht auf der Einkaufsliste</div>'
+          : `<button type="button" class="p-fehlt" style="margin-top:6px" data-aktion="schritt-einkauf" data-id="${s.id}">+ Auf die Einkaufsliste</button>`) : ''}
+      </div></div>`;
+  });
+  html += `</div><button type="button" class="plus-gestrichelt" data-aktion="schritt-neu" data-id="${r.id}">+ Schritt</button>
+    <div class="notizbox ${r.notizen ? '' : 'leer-notiz'}"><span class="label">NOTIZEN</span>${r.notizen ? esc(r.notizen) : 'Noch keine Notizen – über „Bearbeiten“ hinzufügen.'}</div>`;
+  bereich.innerHTML = html;
+}
+
+// Alle Klicks im Armeen-Bereich an einer Stelle behandeln
+el('armeenBereich').addEventListener('click', e => {
+  const b = e.target.closest('[data-aktion]');
+  if (!b) return;
+  const id = +b.dataset.id;
+  ({
+    'armee-neu': () => armeeFormular(null),
+    'armee-bearbeiten': () => armeeFormular(armeen.find(a => a.id === id)),
+    'armee-aktiv': () => geradeDran(id),
+    'rezept-neu': () => rezeptFormular(null, id),
+    'rezept-bearbeiten': () => rezeptFormular(rezepte.find(r => r.id === id)),
+    'schritt-neu': () => schrittFormular(null, id),
+    'schritt-bearbeiten': () => schrittFormular(schritte.find(s => s.id === id)),
+    'schritt-einkauf': () => aufEinkaufsliste([farbInfo(schritte.find(s => s.id === id))]),
+    'fehlende-einkauf': () => aufEinkaufsliste(farbenAus(schritteDerArmee(id)).filter(x => !x.da && !x.aufListe))
+  })[b.dataset.aktion]?.();
+});
+document.querySelectorAll('[data-schliessen]').forEach(b =>
+  b.addEventListener('click', () => b.closest('dialog').close()));
+
+async function geradeDran(id) {
+  const a = armeen.find(x => x.id === id);
+  if (a.aktiv) {
+    await db.from('armeen').update({ aktiv: false }).eq('id', id);
+  } else {
+    await db.from('armeen').update({ aktiv: false }).eq('aktiv', true);  // nur eine gleichzeitig
+    await db.from('armeen').update({ aktiv: true }).eq('id', id);
+  }
+  armeenLaden();
+}
+
+// Fehlende Farben auf die Einkaufsliste setzen (neue Katalog-Farben mit 0 Töpfen anlegen)
+async function aufEinkaufsliste(liste) {
+  for (const i of liste.filter(Boolean)) {
+    if (i.eigene) {
+      await db.from('farben').update({ einkaufen: true }).eq('id', i.eigene.id);
+    } else if (i.kat) {
+      const k = i.kat;
+      await db.from('farben').insert({ name: k.name, marke: k.marke, linie: k.linie, code: k.code, hex: k.hex,
+        typ: k.typ, farbfamilie: k.farbfamilie, anzahl: 0, fuellstand: 'leer', einkaufen: true });
+    }
+  }
+  await laden();
+  alert(liste.length === 1 ? 'Auf der Einkaufsliste! 🛒' : `${liste.length} Farben auf der Einkaufsliste! 🛒`);
+}
+
+// --- Armee-Formular ---
+function armeeFormular(a) {
+  bearbeiteArmee = a;
+  el('armeeTitel').textContent = a ? 'Armee bearbeiten' : 'Neue Armee';
+  el('aName').value = a ? a.name : '';
+  el('aNotizen').value = a ? (a.notizen || '') : '';
+  el('armeeFehler').textContent = '';
+  el('armeeLoeschen').classList.toggle('hidden', !a);
+  el('dlgArmee').showModal();
+}
+el('formArmee').addEventListener('submit', async e => {
+  e.preventDefault();
+  const daten = { name: el('aName').value.trim(), notizen: el('aNotizen').value.trim() || null };
+  const { data, error } = bearbeiteArmee
+    ? await db.from('armeen').update(daten).eq('id', bearbeiteArmee.id).select()
+    : await db.from('armeen').insert(daten).select();
+  if (error) {
+    el('armeeFehler').textContent = error.code === '23505' ? 'Diese Armee gibt es schon.' : 'Fehler: ' + error.message;
+    return;
+  }
+  el('dlgArmee').close();
+  await armeenLaden();
+  if (!bearbeiteArmee && data && data[0]) location.hash = '#armee-' + data[0].id;
+});
+el('armeeLoeschen').addEventListener('click', async () => {
+  if (!confirm(`„${bearbeiteArmee.name}“ mit allen Rezepten wirklich löschen?`)) return;
+  await db.from('armeen').delete().eq('id', bearbeiteArmee.id);
+  el('dlgArmee').close();
+  location.hash = '#armeen';
+  armeenLaden();
+});
+
+// --- Rezept-Formular ---
+function rezeptFormular(r, armeeId) {
+  bearbeiteRezept = r;
+  neuesRezeptFuer = armeeId ?? null;
+  el('rezeptTitel').textContent = r ? 'Rezept bearbeiten' : 'Neues Rezept';
+  el('rName').value = r ? r.name : '';
+  el('rNotizen').value = r ? (r.notizen || '') : '';
+  el('rezeptFehler').textContent = '';
+  el('rezeptLoeschen').classList.toggle('hidden', !r);
+  el('dlgRezept').showModal();
+}
+el('formRezept').addEventListener('submit', async e => {
+  e.preventDefault();
+  const daten = { name: el('rName').value.trim(), notizen: el('rNotizen').value.trim() || null,
+                  geaendert_am: new Date().toISOString() };
+  const { data, error } = bearbeiteRezept
+    ? await db.from('rezepte').update(daten).eq('id', bearbeiteRezept.id).select()
+    : await db.from('rezepte').insert({ ...daten, armee_id: neuesRezeptFuer }).select();
+  if (error) { el('rezeptFehler').textContent = 'Fehler: ' + error.message; return; }
+  el('dlgRezept').close();
+  await armeenLaden();
+  if (!bearbeiteRezept && data && data[0]) location.hash = '#rezept-' + data[0].id;
+});
+el('rezeptLoeschen').addEventListener('click', async () => {
+  if (!confirm(`Rezept „${bearbeiteRezept.name}“ wirklich löschen?`)) return;
+  const armeeId = bearbeiteRezept.armee_id;
+  await db.from('rezepte').delete().eq('id', bearbeiteRezept.id);
+  el('dlgRezept').close();
+  location.hash = '#armee-' + armeeId;
+  armeenLaden();
+});
+
+// --- Schritt-Formular ---
+function schrittFormular(s, rezeptId) {
+  bearbeiteSchritt = s;
+  neuerSchrittFuer = rezeptId ?? null;
+  const geschwister = schritteVon(s ? s.rezept_id : rezeptId);
+  el('schrittTitel').textContent = s ? 'Schritt bearbeiten' : 'Neuer Schritt';
+  // Neuer Schritt: sinnvolle nächste Phase vorschlagen
+  const letzte = geschwister[geschwister.length - 1];
+  el('sPhase').value = s ? s.phase
+    : (letzte ? PHASEN[Math.min(PHASEN.indexOf(letzte.phase) + 1, PHASEN.length - 1)] : 'Grundierung');
+  schrittWahl = { farbe_id: s ? s.farbe_id : null, katalog_id: s ? s.katalog_id : null };
+  el('sFarbe').value = '';
+  el('sText').value = s ? (s.text || '') : '';
+  el('sNotiz').value = s ? (s.notiz || '') : '';
+  el('schrittFehler').textContent = '';
+  el('sVorschlaege').classList.add('hidden');
+  zeigeWahl();
+  const pos = s ? geschwister.findIndex(x => x.id === s.id) : -1;
+  el('schrittHoch').classList.toggle('hidden', !s || pos <= 0);
+  el('schrittRunter').classList.toggle('hidden', !s || pos >= geschwister.length - 1);
+  el('schrittLoeschen').classList.toggle('hidden', !s);
+  el('dlgSchritt').showModal();
+}
+
+function zeigeWahl() {
+  const info = farbInfo(schrittWahl);
+  const box = el('sGewaehlt');
+  box.classList.toggle('hidden', !info);
+  el('sFarbe').classList.toggle('hidden', !!info);
+  if (!info) return;
+  box.innerHTML = `${kreis(info.hex)}<span class="n"><b>${esc(info.name)}</b><br><small style="color:var(--muted)">${esc(info.unter)}</small></span>
+    ${info.da ? '<span class="p-da">✓ da</span>' : '<span class="p-fehlt">fehlt</span>'}
+    <button type="button" id="sWahlWeg" aria-label="Farbe entfernen">✕</button>`;
+  el('sWahlWeg').addEventListener('click', () => { schrittWahl = { farbe_id: null, katalog_id: null }; zeigeWahl(); el('sFarbe').focus(); });
+}
+
+// Farb-Vorschläge: zuerst eure eigenen Farben, dann der Katalog
+el('sFarbe').addEventListener('input', () => {
+  const suche = el('sFarbe').value.trim().toLowerCase();
+  const box = el('sVorschlaege');
+  box.replaceChildren();
+  if (suche.length < 2) { box.classList.add('hidden'); return; }
+  const text = x => (x.name + ' ' + (x.code || '')).toLowerCase();
+  const eigene = farben.filter(f => text(f).includes(suche)).slice(0, 6)
+    .map(f => ({ eigene: f, kat: katalog.find(k => k.marke === f.marke && k.name === f.name && k.linie === (f.linie || f.typ)) }));
+  const ausKat = katalogSuche(suche).filter(k => !eigeneFarbe(k)).slice(0, 12 - eigene.length).map(k => ({ kat: k }));
+  for (const t of [...eigene, ...ausKat]) {
+    const q = t.eigene || t.kat;
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'vorschlag';
+    b.append(muster(q.hex || 'transparent'), q.name);
+    const info = document.createElement('small');
+    info.textContent = [q.marke, q.linie || q.typ, q.code].filter(Boolean).join(' · ') + (t.eigene ? ' ✓ habt ihr' : '');
+    b.append(info);
+    b.addEventListener('click', () => {
+      schrittWahl = { farbe_id: t.eigene ? t.eigene.id : null, katalog_id: t.kat ? t.kat.id : null };
+      el('sFarbe').value = '';
+      box.classList.add('hidden');
+      zeigeWahl();
+    });
+    box.append(b);
+  }
+  box.classList.toggle('hidden', !box.children.length);
+});
+
+el('formSchritt').addEventListener('submit', async e => {
+  e.preventDefault();
+  const daten = {
+    phase: el('sPhase').value,
+    farbe_id: schrittWahl.farbe_id, katalog_id: schrittWahl.katalog_id,
+    text: el('sText').value.trim() || null,
+    notiz: el('sNotiz').value.trim() || null
+  };
+  if (!daten.farbe_id && !daten.katalog_id && !daten.text) {
+    el('schrittFehler').textContent = 'Bitte eine Farbe wählen oder ein Produkt bzw. eine Technik eintragen.';
+    return;
+  }
+  const rezeptId = bearbeiteSchritt ? bearbeiteSchritt.rezept_id : neuerSchrittFuer;
+  let error;
+  if (bearbeiteSchritt) {
+    ({ error } = await db.from('schritte').update(daten).eq('id', bearbeiteSchritt.id));
+  } else {
+    const max = Math.max(0, ...schritteVon(rezeptId).map(s => s.position));
+    ({ error } = await db.from('schritte').insert({ ...daten, rezept_id: rezeptId, position: max + 1 }));
+  }
+  if (error) { el('schrittFehler').textContent = 'Fehler: ' + error.message; return; }
+  await db.from('rezepte').update({ geaendert_am: new Date().toISOString() }).eq('id', rezeptId);
+  el('dlgSchritt').close();
+  armeenLaden();
+});
+
+el('schrittLoeschen').addEventListener('click', async () => {
+  if (!confirm('Diesen Schritt löschen?')) return;
+  await db.from('schritte').delete().eq('id', bearbeiteSchritt.id);
+  el('dlgSchritt').close();
+  armeenLaden();
+});
+
+// Reihenfolge ändern: mit dem Nachbarn die Position tauschen
+async function verschieben(richtung) {
+  const liste = schritteVon(bearbeiteSchritt.rezept_id);
+  const i = liste.findIndex(s => s.id === bearbeiteSchritt.id);
+  const nachbar = liste[i + richtung];
+  if (!nachbar) return;
+  // Positionen neu durchnummerieren, damit es keine Gleichstände gibt
+  const neu = liste.map((s, j) => ({ id: s.id, position: j + 1 }));
+  [neu[i].position, neu[i + richtung].position] = [neu[i + richtung].position, neu[i].position];
+  for (const n of neu) await db.from('schritte').update({ position: n.position }).eq('id', n.id);
+  el('dlgSchritt').close();
+  armeenLaden();
+}
+el('schrittHoch').addEventListener('click', () => verschieben(-1));
+el('schrittRunter').addEventListener('click', () => verschieben(1));
+
 /* ============ 8. TABS UND FILTER ============ */
 function tab(neu) {
   ansicht = neu;
   el('tabAlle').classList.toggle('aktiv', neu === 'alle');
+  el('tabArmeen').classList.toggle('aktiv', neu === 'armeen');
   el('tabEinkauf').classList.toggle('aktiv', neu === 'einkauf');
+  el('farbenBereich').classList.toggle('hidden', neu === 'armeen');
+  el('armeenBereich').classList.toggle('hidden', neu !== 'armeen');
+  el('neu').classList.toggle('hidden', neu === 'armeen');
   render();
 }
-el('tabAlle').addEventListener('click', () => tab('alle'));
-el('tabEinkauf').addEventListener('click', () => tab('einkauf'));
+
+// Die Adresse merkt sich, wo man in den Armeen ist (#armeen, #armee-3, #rezept-7).
+// So funktioniert auch die Zurück-Geste des Handys.
+function route() {
+  if (/^#(armeen|armee-|rezept-)/.test(location.hash)) tab('armeen');
+  else if (ansicht === 'armeen') tab('alle');
+}
+window.addEventListener('hashchange', route);
+const ohneHash = () => { if (location.hash) history.pushState('', '', location.pathname + location.search); };
+el('tabAlle').addEventListener('click', () => { ohneHash(); tab('alle'); });
+el('tabEinkauf').addEventListener('click', () => { ohneHash(); tab('einkauf'); });
+el('tabArmeen').addEventListener('click', () => { location.hash = '#armeen'; });
+route();
 for (const id of ['suche', 'filterFamilie', 'filterTyp']) el(id).addEventListener('input', render);
 </script>
 </body>
