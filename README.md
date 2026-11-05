@@ -14,4 +14,10 @@ Farbverwaltung für unsere Warhammer-Farben: Bestand, Füllstand und Einkaufslis
 | `.github/workflows/wecker.yml` | Pingt Supabase zweimal pro Woche, damit das Gratis-Projekt nicht pausiert |
 
 Die Daten liegen in Supabase und sind per Login und Row Level Security geschützt.
+
+## Sicherungen
+
+Die App sichert beim Öffnen einmal pro Tag automatisch (Tabelle `sicherungen`, die neuesten 30
+automatischen bleiben erhalten). Über das Schild-Symbol oben rechts lässt sich jederzeit von Hand
+sichern oder ein älterer Stand zurückholen; vor jedem Zurückholen wird der aktuelle Stand gesichert.
 Lizenzen der Farbdaten: siehe [LIZENZEN.md](LIZENZEN.md).

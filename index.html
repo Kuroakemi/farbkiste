@@ -194,6 +194,15 @@
               border-radius: 8px; padding: 8px 10px; margin-top: 6px; }
   .gewaehlt span.n { flex: 1; }
   .gewaehlt button { padding: 4px 10px; }
+
+  /* ===== Sicherungen ===== */
+  .kopf-knoepfe { display: flex; gap: 8px; flex: none; }
+  .icon-knopf { display: flex; align-items: center; justify-content: center; width: 44px; height: 40px; padding: 0; }
+  .sich-liste { max-height: 50vh; overflow-y: auto; margin-top: 12px; display: flex; flex-direction: column; gap: 8px; }
+  .sich-zeile { display: flex; align-items: center; gap: 10px; background: var(--bg); border: 1px solid var(--line);
+                border-radius: 10px; padding: 10px 12px; }
+  .sich-zeile .text { flex: 1; min-width: 0; }
+  .sich-zeile small { display: block; color: var(--muted); font-size: .8rem; margin-top: 2px; }
 </style>
 </head>
 <body>
@@ -210,7 +219,18 @@
       <div id="spruch" title="Antippen für einen neuen Spruch"></div>
     </div>
   </div>
-  <button id="logout" class="hidden">Abmelden</button>
+  <div class="kopf-knoepfe">
+    <button id="sicherungKnopf" class="icon-knopf hidden" aria-label="Sicherungen" title="Sicherungen">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12 3l8 3v6c0 4.5-3.4 8.3-8 9-4.6-.7-8-4.5-8-9V6z"/><path d="M8.5 12.5l2.5 2.5 4.5-5"/>
+      </svg>
+    </button>
+    <button id="logout" class="icon-knopf hidden" aria-label="Abmelden" title="Abmelden">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3"/><path d="M10 16l-4-4 4-4"/><path d="M6 12h10"/>
+      </svg>
+    </button>
+  </div>
 </header>
 
 <main>
@@ -372,6 +392,17 @@
   </form>
 </dialog>
 
+<!-- SICHERUNGEN -->
+<dialog id="dlgSicherungen">
+  <h2 style="margin:0 0 4px">Sicherungen</h2>
+  <p style="margin:6px 0 0;color:var(--muted);font-size:.9rem">Die App sichert automatisch einmal pro Tag beim Öffnen.
+     Eine Sicherung enthält alle Farben, Armeen, Rezepte und Schritte.</p>
+  <button type="button" id="jetztSichern" class="primary" style="margin-top:12px;width:100%">Jetzt sichern</button>
+  <div id="sichStatus" class="fehler" style="color:var(--muted)"></div>
+  <div id="sichListe" class="sich-liste"></div>
+  <div class="knoepfe"><button type="button" data-schliessen class="primary">Schliessen</button></div>
+</dialog>
+
 <datalist id="marken">
   <option value="Citadel"><option value="Vallejo"><option value="The Army Painter"><option value="AK Interactive"><option value="Scale75">
 </datalist>
@@ -446,11 +477,13 @@ db.auth.onAuthStateChange((event, session) => {
   el('login').classList.toggle('hidden', drin);
   el('app').classList.toggle('hidden', !drin);
   el('logout').classList.toggle('hidden', !drin);
+  el('sicherungKnopf').classList.toggle('hidden', !drin);
   // Laden kurz verzögern: Supabase-Aufrufe direkt hier drin können hängen bleiben
   if (drin && (event === 'INITIAL_SESSION' || event === 'SIGNED_IN')) setTimeout(() => {
     laden();
     katalogLaden();
     armeenLaden();
+    autoSicherung();
   }, 0);
 });
 
@@ -1269,6 +1302,69 @@ async function verschieben(richtung) {
 }
 el('schrittHoch').addEventListener('click', () => verschieben(-1));
 el('schrittRunter').addEventListener('click', () => verschieben(1));
+
+/* ============ 7d. SICHERUNGEN ============
+   Die Sicherungen liegen in der Datenbank (Tabelle "sicherungen").
+   Erstellen und Wiederherstellen erledigen zwei Funktionen in Supabase,
+   siehe sql/06_sicherungen.sql. */
+const datumText = d => new Date(d).toLocaleString('de-CH',
+  { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+
+// Einmal pro Tag automatisch sichern (wenn die letzte automatische älter als 20 Stunden ist)
+async function autoSicherung() {
+  const { data, error } = await db.from('sicherungen').select('erstellt_am')
+    .eq('art', 'automatisch').order('erstellt_am', { ascending: false }).limit(1);
+  if (error) return;  // Tabelle fehlt noch: dann eben keine automatische Sicherung
+  const letzte = data[0] ? new Date(data[0].erstellt_am) : null;
+  if (!letzte || Date.now() - letzte > 20 * 3600 * 1000) {
+    await db.rpc('sicherung_erstellen', { p_art: 'automatisch' });
+  }
+}
+
+async function sicherungenZeigen() {
+  el('sichStatus').textContent = 'Lade …';
+  el('dlgSicherungen').showModal();
+  const { data, error } = await db.from('sicherungen').select('id, erstellt_am, art, zusammenfassung')
+    .order('erstellt_am', { ascending: false }).limit(50);
+  const liste = el('sichListe');
+  liste.innerHTML = '';
+  if (error) {
+    el('sichStatus').textContent = 'Die Sicherungs-Tabelle fehlt noch. Bitte sql/06_sicherungen.sql in Supabase ausführen.';
+    return;
+  }
+  el('sichStatus').textContent = data.length ? '' : 'Noch keine Sicherungen.';
+  for (const sch of data) {
+    const z = document.createElement('div');
+    z.className = 'sich-zeile';
+    z.innerHTML = `<div class="text"><b>${esc(datumText(sch.erstellt_am))}</b>
+      <small>${esc(sch.art)} · ${esc(sch.zusammenfassung || '')}</small></div>`;
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.textContent = 'Zurückholen';
+    b.addEventListener('click', () => wiederherstellen(sch));
+    z.append(b);
+    liste.append(z);
+  }
+}
+
+async function wiederherstellen(sch) {
+  if (!confirm(`Alle aktuellen Daten durch den Stand vom ${datumText(sch.erstellt_am)} ersetzen?\n\n` +
+               'Keine Sorge: Der jetzige Stand wird vorher automatisch gesichert.')) return;
+  el('sichStatus').textContent = 'Stelle wieder her …';
+  const { error } = await db.rpc('sicherung_wiederherstellen', { p_id: sch.id });
+  if (error) { el('sichStatus').textContent = 'Fehler: ' + error.message; return; }
+  el('dlgSicherungen').close();
+  await Promise.all([laden(), armeenLaden()]);
+  alert('Wiederhergestellt! ✓');
+}
+
+el('sicherungKnopf').addEventListener('click', sicherungenZeigen);
+el('jetztSichern').addEventListener('click', async () => {
+  el('sichStatus').textContent = 'Sichere …';
+  const { error } = await db.rpc('sicherung_erstellen', { p_art: 'manuell' });
+  if (error) { el('sichStatus').textContent = 'Fehler: ' + error.message; return; }
+  sicherungenZeigen();
+});
 
 /* ============ 8. TABS UND FILTER ============ */
 function tab(neu) {
