@@ -3,25 +3,40 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Manus Farbkiste</title>
+<title>Manu’s Farbkiste</title>
+<meta name="theme-color" content="#14151a">
+<meta name="apple-mobile-web-app-title" content="Farbkiste">
+<link rel="icon" href="icon.png">
+<link rel="apple-touch-icon" href="icon.png">
 <!-- Supabase-Bibliothek: übernimmt Login und Datenbank-Anfragen -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   :root {
     --bg: #14151a; --card: #1e2028; --line: #2d303b; --text: #eceef3; --muted: #9aa0ae;
-    --accent: #7cc4a4; --ok: #6fcf8f; --mid: #e3cf5b; --warn: #e8a54b; --bad: #e26d6d;
+    --accent: #ff7a1a; --accent-hell: #ffb070; --ok: #6fcf8f; --mid: #e3cf5b; --warn: #e8a54b; --bad: #e26d6d;
   }
   * { box-sizing: border-box; }
   body { margin: 0; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
          background: var(--bg); color: var(--text); }
-  header { position: sticky; top: 0; z-index: 5; background: var(--bg); border-bottom: 1px solid var(--line);
-           padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; }
-  h1 { font-size: 1.25rem; margin: 0; }
-  h1 span { color: var(--accent); }
-  main { max-width: 720px; margin: 0 auto; padding: 16px; }
+  /* Kopfzeile mit oranger Farbkante, von der Farbe heruntertropft */
+  header { position: sticky; top: 0; z-index: 5; background: var(--bg); border-bottom: 4px solid var(--accent);
+           padding: 12px 16px 10px; display: flex; align-items: center; justify-content: space-between; }
+  header::after { content: ""; position: absolute; left: 0; right: 0; top: 100%; height: 22px; pointer-events: none;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='22' viewBox='0 0 120 22'%3E%3Cpath fill='%23ff7a1a' d='M0 0h120v4c-6 0-8 1-10 1s-2 14-6 14-4-14-7-14c-9 0-12-1-20-1s-5 8-9 8-4-8-8-8c-10 0-14 2-21 2s-3 10-7 10-5-10-9-10C15 6 8 4 0 4z'/%3E%3C/svg%3E") repeat-x;
+    transform-origin: top; animation: tropfen 1.4s ease-out; }
+  @keyframes tropfen { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+  .titel { display: flex; align-items: center; gap: 10px; min-width: 0; }
+  .logo { width: 34px; height: 34px; flex: none; animation: wackeln 1.2s ease-in-out .3s; }
+  @keyframes wackeln { 0%,100% { transform: rotate(0); } 25% { transform: rotate(-12deg); } 60% { transform: rotate(8deg); } }
+  h1 { font-size: 1.3rem; margin: 0; line-height: 1.1; }
+  h1 .manu { color: var(--accent); font-weight: 800; }
+  #spruch { font-size: .78rem; color: var(--muted); margin-top: 2px; cursor: pointer; user-select: none; }
+  @media (prefers-reduced-motion: reduce) { header::after, .logo { animation: none; } }
+  main { max-width: 720px; margin: 0 auto; padding: 30px 16px 16px; }
   button, input, select, textarea { font: inherit; color: inherit; }
   button { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 8px 12px; cursor: pointer; }
-  button.primary { background: var(--accent); border-color: var(--accent); color: #10231a; font-weight: 600; }
+  button.primary { background: var(--accent); border-color: var(--accent); color: #2a1200; font-weight: 600; }
+  input:focus, select:focus, textarea:focus { outline: 2px solid var(--accent); outline-offset: 0; border-color: transparent; }
   button.danger { color: var(--bad); }
   input, select, textarea { width: 100%; background: var(--card); border: 1px solid var(--line);
                             border-radius: 8px; padding: 9px 10px; }
@@ -115,7 +130,17 @@
 <body>
 
 <header>
-  <h1>🎨 Manus <span>Farb</span>kiste</h1>
+  <div class="titel">
+    <!-- Logo: ein oranger Farbtropfen -->
+    <svg class="logo" viewBox="0 0 32 32" aria-hidden="true">
+      <path d="M16 2C16 2 6 14 6 20.5a10 10 0 0 0 20 0C26 14 16 2 16 2z" fill="#ff7a1a"/>
+      <path d="M11.5 19.5c0 2.6 1.6 4.6 3.8 5.3" stroke="#ffd2a8" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+    </svg>
+    <div>
+      <h1><span class="manu">Manu’s</span> Farbkiste</h1>
+      <div id="spruch" title="Antippen für einen neuen Spruch"></div>
+    </div>
+  </div>
   <button id="logout" class="hidden">Abmelden</button>
 </header>
 
@@ -246,6 +271,27 @@ const eigeneFarbe = k => farben.find(f =>
 el('dashboardLink').href =
   'https://supabase.com/dashboard/project/' + new URL(SUPABASE_URL).hostname.split('.')[0];
 
+// Ein zufälliger Spruch unter dem Titel (antippen für den nächsten)
+const SPRUECHE = [
+  'Heute schon gepinselt?',
+  'Nur noch ein Layer. Versprochen.',
+  'Nuln Oil löst alle Probleme.',
+  'Pinsel nicht ablecken!',
+  'Der Pile of Shame wartet schon.',
+  'Dünn malen – zwei Schichten.',
+  'Orange ist keine Farbe, sondern eine Lebenseinstellung.',
+  'Grundieren nicht vergessen!',
+  'Wasserbecher ≠ Kaffeetasse.',
+  'Noch eine Farbe kaufen? Immer.'
+];
+let spruchNr = Math.floor(Math.random() * SPRUECHE.length);
+function neuerSpruch() {
+  spruchNr = (spruchNr + 1) % SPRUECHE.length;
+  el('spruch').textContent = SPRUECHE[spruchNr];
+}
+el('spruch').textContent = SPRUECHE[spruchNr];
+el('spruch').addEventListener('click', neuerSpruch);
+
 // Dropdowns befüllen
 function optionen(select, werte) {
   for (const w of werte) select.append(new Option(w, w));
@@ -369,7 +415,7 @@ function render() {
   if (!liste.length && !ausKatalog.length) {
     const p = document.createElement('p');
     p.className = 'leer';
-    p.textContent = ansicht === 'einkauf' ? 'Nichts zu kaufen. 🎉' : 'Keine Farben gefunden.';
+    p.textContent = ansicht === 'einkauf' ? 'Nichts zu kaufen – Manu’s Geldbeutel atmet auf. 🎉' : 'Keine Farben gefunden.';
     wrap.append(p);
     return;
   }
