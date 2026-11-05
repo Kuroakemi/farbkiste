@@ -91,6 +91,25 @@
   .vorschlag:last-child { border-bottom: 0; }
   .vorschlag:hover, .vorschlag:focus { background: var(--card); }
   .vorschlag small { color: var(--muted); margin-left: auto; padding-left: 8px; text-align: right; }
+
+  /* Bestand-Abzeichen oben rechts auf jeder Karte */
+  .kopf { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+  .bestand { flex: none; font-size: .8rem; font-weight: 600; border-radius: 99px; padding: 2px 9px;
+             background: #1d3a2b; color: var(--ok); white-space: nowrap; }
+  .bestand.keiner { background: #3d1f1f; color: var(--bad); }
+
+  /* Katalog-Treffer in der Suche */
+  .katalog-titel { color: var(--muted); font-size: .85rem; margin: 18px 0 8px; }
+  .katalog-zeile { display: flex; align-items: center; gap: 10px; background: var(--card);
+                   border: 1px dashed var(--line); border-radius: 10px; padding: 10px 12px; margin-bottom: 8px; }
+  .katalog-zeile .info { flex: 1; min-width: 0; }
+  .katalog-zeile small { display: block; color: var(--muted); font-size: .82rem; }
+  .katalog-zeile button { flex: none; }
+
+  /* Hinweis im Formular, wenn ihr die Farbe schon habt */
+  .hinweis { background: #3a2a14; border: 1px solid var(--warn); border-radius: 8px;
+             padding: 9px 10px; margin-top: 8px; font-size: .9rem; }
+  .hinweis button { margin-top: 6px; }
 </style>
 </head>
 <body>
@@ -128,7 +147,7 @@
     </div>
 
     <div class="filter">
-      <input id="suche" type="search" placeholder="Suchen, z. B. Abaddon">
+      <input id="suche" type="search" placeholder="Suchen in euren Farben und im Katalog">
       <select id="filterFamilie"><option value="">Alle Farbfamilien</option></select>
       <select id="filterTyp"><option value="">Alle Typen</option></select>
     </div>
@@ -148,6 +167,7 @@
       <input id="fName" required autocomplete="off" placeholder="Tippen, z. B. Abad oder 72.120">
       <div id="vorschlaege" class="hidden"></div>
     </div>
+    <div id="formHinweis" class="hinweis hidden"></div>
     <div class="zwei">
       <div>
         <label for="fLinie">Linie</label>
@@ -219,6 +239,9 @@ let bearbeiteId = null;   // null = neue Farbe, sonst die id der Farbe
 
 const el = id => document.getElementById(id);
 const brauchtKauf = f => KNAPP.includes(f.fuellstand) || f.einkaufen;
+// Findet eure eigene Farbe zu einem Katalog-Eintrag (gleiche Marke, Name und Linie)
+const eigeneFarbe = k => farben.find(f =>
+  f.marke === k.marke && f.name === k.name && (f.linie || f.typ) === k.linie);
 
 el('dashboardLink').href =
   'https://supabase.com/dashboard/project/' + new URL(SUPABASE_URL).hostname.split('.')[0];
@@ -307,6 +330,7 @@ async function katalogLaden() {
     if (data.length < SEITE) break;
   }
   katalog = alle;
+  render();
 }
 
 /* ============ 5. ANZEIGEN ============ */
@@ -334,14 +358,55 @@ function render() {
 
   const wrap = el('liste');
   wrap.replaceChildren();
-  if (!liste.length) {
+  for (const f of liste) wrap.append(karte(f));
+
+  // Bei einer Suche zusätzlich passende Katalog-Farben zeigen, die ihr noch nicht habt
+  const ausKatalog = (ansicht === 'alle' && suche.length >= 2)
+    ? katalogSuche(suche).filter(k => !eigeneFarbe(k) &&
+        (!familie || k.farbfamilie === familie) && (!typ || k.typ === typ)).slice(0, 15)
+    : [];
+
+  if (!liste.length && !ausKatalog.length) {
     const p = document.createElement('p');
     p.className = 'leer';
     p.textContent = ansicht === 'einkauf' ? 'Nichts zu kaufen. 🎉' : 'Keine Farben gefunden.';
     wrap.append(p);
     return;
   }
-  for (const f of liste) wrap.append(karte(f));
+  if (ausKatalog.length) {
+    const titel = document.createElement('div');
+    titel.className = 'katalog-titel';
+    titel.textContent = 'Aus dem Katalog – noch nicht bei euch:';
+    wrap.append(titel);
+    for (const k of ausKatalog) wrap.append(katalogZeile(k));
+  }
+}
+
+// Katalog durchsuchen: zuerst Namen, die mit dem Text beginnen, dann die übrigen Treffer
+function katalogSuche(suche) {
+  const text = k => (k.name + ' ' + (k.code || '')).toLowerCase();
+  return [
+    ...katalog.filter(k => text(k).startsWith(suche)),
+    ...katalog.filter(k => !text(k).startsWith(suche) && text(k).includes(suche))
+  ];
+}
+
+function katalogZeile(k) {
+  const z = document.createElement('div');
+  z.className = 'katalog-zeile';
+  z.append(muster(k.hex || 'transparent'));
+  const info = document.createElement('div');
+  info.className = 'info';
+  info.append(k.name);
+  const klein = document.createElement('small');
+  klein.textContent = [k.marke, k.linie, k.code, k.farbfamilie].filter(Boolean).join(' · ');
+  info.append(klein);
+  const knopf = document.createElement('button');
+  knopf.className = 'primary';
+  knopf.textContent = '+ Hinzufügen';
+  knopf.addEventListener('click', () => { formularOeffnen(); katalogUebernehmen(k); });
+  z.append(info, knopf);
+  return z;
 }
 
 // Kleiner farbiger Kreis
@@ -357,7 +422,7 @@ function karte(f) {
   k.className = 'karte ' + ({ halb: 'halb', 'fast leer': 'knapp', eingetrocknet: 'weg', leer: 'weg' }[f.fuellstand] || '');
 
   k.innerHTML = `
-    <div class="name"></div>
+    <div class="kopf"><div class="name"></div><span class="bestand"></span></div>
     <div class="meta"></div>
     <div class="notiz"></div>
     <div class="zeile">
@@ -369,7 +434,7 @@ function karte(f) {
       </div>
     </div>
     <div class="zeile">
-      <label class="check"><input type="checkbox" class="ek"> Einkaufen</label>
+      <label class="check"><input type="checkbox" class="ek"> Auf Einkaufsliste</label>
       <div class="rechts">
         <button class="gekauft primary">Gekauft ✓</button>
         <button class="bearb">Bearbeiten</button>
@@ -386,6 +451,9 @@ function karte(f) {
     [f.marke, linie, f.typ, f.code, f.farbfamilie].filter(Boolean).join(' · ');
   k.querySelector('.notiz').textContent = f.notizen || '';
   k.querySelector('.anz').textContent = f.anzahl;
+  const bestand = k.querySelector('.bestand');
+  bestand.textContent = f.anzahl > 0 ? `✓ ${f.anzahl} ${f.anzahl === 1 ? 'Topf' : 'Töpfe'}` : 'Keiner da';
+  bestand.classList.toggle('keiner', f.anzahl === 0);
 
   const fs = k.querySelector('.fs');
   optionen(fs, FUELLSTAENDE);
@@ -439,6 +507,7 @@ function formularOeffnen(f = null) {
   el('formFehler').textContent = '';
   el('loeschen').classList.toggle('hidden', !f);
   el('vorschlaege').classList.add('hidden');
+  el('formHinweis').classList.add('hidden');
   el('dlg').showModal();
 }
 
@@ -452,12 +521,7 @@ el('fName').addEventListener('input', () => {
   box.replaceChildren();
   if (suche.length < 2 || !katalog.length) { box.classList.add('hidden'); return; }
 
-  // Zuerst Farben, die mit dem Text beginnen, dann solche, die ihn nur enthalten
-  const passt = k => (k.name + ' ' + (k.code || '')).toLowerCase();
-  const treffer = [
-    ...katalog.filter(k => passt(k).startsWith(suche)),
-    ...katalog.filter(k => !passt(k).startsWith(suche) && passt(k).includes(suche))
-  ].slice(0, 12);
+  const treffer = katalogSuche(suche).slice(0, 12);
   if (!treffer.length) { box.classList.add('hidden'); return; }
 
   for (const k of treffer) {
@@ -466,7 +530,7 @@ el('fName').addEventListener('input', () => {
     b.className = 'vorschlag';
     b.append(muster(k.hex || 'transparent'), k.name);
     const info = document.createElement('small');
-    const schonDa = farben.some(f => f.marke === k.marke && f.name === k.name && (f.linie || f.typ) === k.linie);
+    const schonDa = !!eigeneFarbe(k);
     info.textContent = [k.marke, k.linie, k.code].filter(Boolean).join(' · ') + (schonDa ? ' ✓ habt ihr' : '');
     b.append(info);
     b.addEventListener('click', () => katalogUebernehmen(k));
@@ -484,7 +548,22 @@ function katalogUebernehmen(k) {
   el('fFamilie').value = k.farbfamilie || '';
   aktuellesHex = k.hex;
   el('vorschlaege').classList.add('hidden');
+  schonDaHinweis(eigeneFarbe(k));
   el('fAnzahl').focus();
+}
+
+// Warnt, wenn ihr eine Farbe neu erfassen wollt, die schon in eurer Liste ist
+function schonDaHinweis(f) {
+  const box = el('formHinweis');
+  box.replaceChildren();
+  if (!f || f.id === bearbeiteId) { box.classList.add('hidden'); return; }
+  box.append(`⚠️ Habt ihr schon: ${f.anzahl} ${f.anzahl === 1 ? 'Topf' : 'Töpfe'}, ${f.fuellstand}.`);
+  const knopf = document.createElement('button');
+  knopf.type = 'button';
+  knopf.textContent = 'Diese Farbe öffnen';
+  knopf.addEventListener('click', () => formularOeffnen(f));
+  box.append(document.createElement('br'), knopf);
+  box.classList.remove('hidden');
 }
 
 el('neu').addEventListener('click', () => formularOeffnen());
