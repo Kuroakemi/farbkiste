@@ -127,6 +127,9 @@
   .katalog-zeile .info { flex: 1; min-width: 0; }
   .katalog-zeile small { display: block; color: var(--muted); font-size: .82rem; }
   .katalog-zeile button { flex: none; }
+  .katalog-zeile .icon-knopf { font-size: 1.1rem; width: 40px; }
+  .katalog-zeile button.primary { padding: 8px 10px; }
+  .katalog-zeile { gap: 8px; }
 
   /* Hinweis im Formular, wenn ihr die Farbe schon habt */
   .hinweis { background: #3a2a14; border: 1px solid var(--warn); border-radius: 8px;
@@ -625,7 +628,14 @@ function katalogZeile(k) {
   knopf.className = 'primary';
   knopf.textContent = '+ Hinzufügen';
   knopf.addEventListener('click', () => { formularOeffnen(); katalogUebernehmen(k); });
-  z.append(info, knopf);
+  // Direkt auf die Einkaufsliste (als Farbe mit 0 Töpfen)
+  const korb = document.createElement('button');
+  korb.className = 'icon-knopf';
+  korb.title = 'Auf die Einkaufsliste';
+  korb.setAttribute('aria-label', 'Auf die Einkaufsliste');
+  korb.textContent = '🛒';
+  korb.addEventListener('click', () => aufEinkaufsliste([{ kat: k }]));
+  z.append(info, korb, knopf);
   return z;
 }
 

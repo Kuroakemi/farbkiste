@@ -10,6 +10,7 @@ Farbverwaltung für unsere Warhammer-Farben: Bestand, Füllstand und Einkaufslis
 |---|---|
 | `index.html` | Die ganze Webseite (Login, Farbliste, Einkaufsliste, Katalog-Vorschläge) |
 | `sql/` | Datenbank-Befehle für Supabase, in der Reihenfolge der Nummern |
+| `sql/07_tone_pro.sql` | Die neuen Warhammer-Tone-Pro-Farben (30 × 5 Töne), Farbcodes aus der offiziellen Farbtabelle ausgelesen |
 | `tools/katalog_bauen.py` | Erzeugt `sql/03_katalog_daten.sql` aus den offenen Farb-Datensätzen |
 | `.github/workflows/wecker.yml` | Pingt Supabase zweimal pro Woche, damit das Gratis-Projekt nicht pausiert |
 
